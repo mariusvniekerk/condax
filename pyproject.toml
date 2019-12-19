@@ -1,0 +1,17 @@
+[metadata]
+name = 'condax'
+version = '0.0.1'
+description = 'Install and run applications packaged with conda in isolated environments'
+author = 'Marius van Niekerk'
+author_email = 'marius.v.niekerk@gmail.com'
+license = 'MIT'
+url = 'https://github.com/_/condax'
+
+[requires]
+python_version = ['2.7', '3.5', '3.6', 'pypy', 'pypy3']
+
+[build-system]
+requires = ['setuptools', 'wheel']
+
+[tool.hatch.commands]
+prerelease = 'hatch build'
