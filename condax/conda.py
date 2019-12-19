@@ -70,8 +70,26 @@ def create_conda_environment(package):
     )
 
 
+def remove_conda_env(package):
+    conda_exe = ensure_conda()
+
+    subprocess.check_call(
+        [
+            conda_exe,
+            "remove",
+            "--prefix",
+            f"{CONDA_ENV_PREFIX_PATH}/{package}",
+            "--all",
+        ]
+    )
+
+
+def conda_env_prefix(package):
+    return f"{CONDA_ENV_PREFIX_PATH}/{package}"
+
+
 def detemine_executables_from_env(package):
-    env_prefix = f"{CONDA_ENV_PREFIX_PATH}/{package}"
+    env_prefix = conda_env_prefix(package)
 
     for file_name in glob.glob(f"{env_prefix}/conda-meta/{package}*.json"):
         with open(file_name, "r") as fo:
