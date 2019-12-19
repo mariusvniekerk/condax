@@ -1,11 +1,11 @@
+import glob
+import json
 import logging
 import os
 import platform
 import shutil
 import stat
 import subprocess
-import glob
-import json
 
 import requests
 
@@ -52,39 +52,44 @@ def ensure_dest_prefix():
 def create_conda_environment(package):
     conda_exe = ensure_conda()
 
-    subprocess.check_call([
-        conda_exe, 'create', 
-        '--prefix', f'{CONDA_ENV_PREFIX_PATH}/{package}',
-        '--override-channels',
-        # TODO: allow configuring this
-        '--channel', 'conda-forge',
-        '--channel', 'defaults',
-        '--quiet',
-        package
-    ])
+    subprocess.check_call(
+        [
+            conda_exe,
+            "create",
+            "--prefix",
+            f"{CONDA_ENV_PREFIX_PATH}/{package}",
+            "--override-channels",
+            # TODO: allow configuring this
+            "--channel",
+            "conda-forge",
+            "--channel",
+            "defaults",
+            "--quiet",
+            package,
+        ]
+    )
 
 
 def detemine_executables_from_env(package):
     env_prefix = f"{CONDA_ENV_PREFIX_PATH}/{package}"
 
     for file_name in glob.glob(f"{env_prefix}/conda-meta/{package}*.json"):
-        with open(file_name, 'r') as fo:
+        with open(file_name, "r") as fo:
             package_info = json.load(fo)
             if package_info["name"] == package:
-                potential_executables = [fn for fn in package_info["files"] if fn.startswith('bin/') or fn.startswith('sbin/')]
+                potential_executables = [
+                    fn
+                    for fn in package_info["files"]
+                    if fn.startswith("bin/") or fn.startswith("sbin/")
+                ]
                 break
     else:
         raise ValueError("Could not determine package files")
 
     executables = []
     for fn in potential_executables:
-        abs_executable_path = f'{env_prefix}/{fn}'
+        abs_executable_path = f"{env_prefix}/{fn}"
         if os.access(abs_executable_path, os.X_OK):
             executables.append(abs_executable_path)
-    
+
     return executables
-
-
-
-
-

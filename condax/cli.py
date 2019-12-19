@@ -7,11 +7,12 @@ from . import core
 def cli():
     pass
 
+
 @cli.command()
-@click.argument('package')
+@click.argument("package")
 def install(package):
     core.install_package(package)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

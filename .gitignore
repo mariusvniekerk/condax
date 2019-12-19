@@ -3,6 +3,7 @@
 .cache/
 .coverage
 .idea/
+.mypy_cache/
 .vscode/
 condax.egg-info/
 build/

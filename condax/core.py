@@ -1,10 +1,7 @@
 import os
 
+from .conda import create_conda_environment, detemine_executables_from_env
 from .config import CONDAX_LINK_DESTINATION
-from .conda import (
-    create_conda_environment,
-    detemine_executables_from_env,
-)
 
 
 def install_package(package):
@@ -13,6 +10,3 @@ def install_package(package):
     for exe in executables_to_link:
         executable_name = os.path.basename(exe)
         os.symlink(exe, f"{CONDAX_LINK_DESTINATION}/{executable_name}")
-    
-
-
