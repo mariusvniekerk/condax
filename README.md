@@ -4,8 +4,8 @@ Condax is inpired by the excellent [pipx](https://github.com/pipxproject/pipx), 
 
 ## Installation
 
-condax is distributed on `PyPI <https://pypi.org>`_ as a universal
-wheel and is available on Linux/macOS and Windows and supports
+condax is distributed on [PyPI](https://pypi.org) as a universal
+wheel and is available on Linux and macOS and supports
 Python 3.5+ and PyPy.
 
 ```bash
