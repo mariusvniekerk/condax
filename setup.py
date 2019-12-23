@@ -22,7 +22,7 @@ REQUIRES = ["click"]
 
 setup(
     name="condax",
-    version=version,
+    version="0.0.1",
     description="Install and run applications packaged with conda in isolated environments",
     long_description=readme,
     author="Marius van Niekerk",
