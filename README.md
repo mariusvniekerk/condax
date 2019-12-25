@@ -1,5 +1,6 @@
 # condax
 
+[![Docs](https://img.shields.io/badge/docs-mkdocs-informational)](https://mariusvniekerk.github.com/condax)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mariusvniekerk/condax/Python%20package)](https://github.com/mariusvniekerk/condax/actions?query=workflow%3A%22Python+package%22)
 [![Licence: MIT](https://img.shields.io/github/license/mariusvniekerk/condax)](https://github.com/mariusvniekerk/condax/blob/master/LICENSE-MIT)
 [![PyPI](https://img.shields.io/pypi/v/condax)](https://pypi.org/project/condax)
