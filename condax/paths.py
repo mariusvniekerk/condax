@@ -11,7 +11,10 @@ def mkpath(path):
 def add_path_to_environment(path):
     path = str(path)
 
-    post_install_message = "You likely need to open a new terminal or re-login for changes to your $PATH take effect."
+    post_install_message = (
+        "You likely need to open a new terminal or re-login for changes to your $PATH"
+        "to take effect."
+    )
     if userpath.in_current_path(path) or userpath.need_shell_restart(path):
         if userpath.need_shell_restart(path):
             print(

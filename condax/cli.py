@@ -1,8 +1,6 @@
 import click
 
-import userpath
-
-from . import config, paths
+from . import config, core, paths
 
 
 @click.group()
