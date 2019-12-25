@@ -10,3 +10,4 @@ dependencies:
   # Test dependencies
   - pytest
   - coverage
+  # Doc depe

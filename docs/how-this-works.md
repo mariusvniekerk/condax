@@ -7,3 +7,4 @@ When installing a package condax will
 * create a conda environment in `~/.condax/PACKAGE`
 * identify the binaries/executables that are installed by `PACAKGE` (not its dependencies)
 * symlink those binaries to `~/.local/bin`
+

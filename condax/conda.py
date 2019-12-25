@@ -60,7 +60,7 @@ def create_conda_environment(package):
             conda_exe,
             "create",
             "--prefix",
-            f"{CONDA_ENV_PREFIX_PATH}/{package}",
+            os.path.join(CONDA_ENV_PREFIX_PATH, package),
             "--override-channels",
             # TODO: allow configuring this
             "--channel",
@@ -77,18 +77,20 @@ def remove_conda_env(package):
     conda_exe = ensure_conda()
 
     subprocess.check_call(
-        [
-            conda_exe,
-            "remove",
-            "--prefix",
-            os.path.join(f"{CONDA_ENV_PREFIX_PATH}", package),
-            "--all",
-        ]
+        [conda_exe, "remove", "--prefix", conda_env_prefix(package), "--all",]
+    )
+
+
+def update_conda_env(package):
+    conda_exe = ensure_conda()
+
+    subprocess.check_call(
+        [conda_exe, "update", "--prefix", conda_env_prefix(package), "--all",]
     )
 
 
 def conda_env_prefix(package):
-    return os.path.join("{CONDA_ENV_PREFIX_PATH}", package)
+    return os.path.join(CONDA_ENV_PREFIX_PATH, package)
 
 
 def detemine_executables_from_env(package):
