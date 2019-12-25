@@ -1,6 +1,8 @@
 import click
 
-from . import core
+import userpath
+
+from . import config, paths
 
 
 @click.group()
@@ -18,6 +20,11 @@ def install(package):
 @click.argument("package")
 def remove(package):
     core.remove_package(package)
+
+
+@cli.command()
+def ensure_path():
+    paths.add_path_to_environment(config.CONDAX_LINK_DESTINATION)
 
 
 if __name__ == "__main__":

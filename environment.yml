@@ -1,0 +1,12 @@
+name: condax
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python >=3.6
+  - click
+  - requests
+  - userpath
+  # Test dependencies
+  - pytest
+  - coverage

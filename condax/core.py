@@ -3,11 +3,13 @@ import sys
 
 from . import conda
 from .config import CONDAX_LINK_DESTINATION
+from .paths import mkpath
 
 
 def install_package(package):
     conda.create_conda_environment(package)
     executables_to_link = conda.detemine_executables_from_env(package)
+    mkpath(CONDAX_LINK_DESTINATION)
     for exe in executables_to_link:
         executable_name = os.path.basename(exe)
         os.symlink(exe, f"{CONDAX_LINK_DESTINATION}/{executable_name}")

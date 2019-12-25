@@ -2,6 +2,7 @@
 $PROJECT = 'condax'
 $ACTIVITIES = [
 	'version_bump',
+	'changelog',
 	'tag',
 	'pypi',
 	'push_tag',
@@ -16,3 +17,6 @@ $VERSION_BUMP_PATTERNS = [
    ('condax/__init__.py', '__version__\s*=.*', '__version__ = "$VERSION"'),
    ('setup.py', 'version\s*=.*,', 'version="$VERSION",'),
 ]
+
+$CHANGELOG_FILENAME = 'docs/changelog.md'
+$CHANGELOG_TEMPLATE = 'TEMPLATE.rst'

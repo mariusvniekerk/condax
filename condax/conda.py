@@ -9,7 +9,8 @@ import subprocess
 
 import requests
 
-from .config import CONDA_ENV_PREFIX_PATH
+from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION
+from .paths import mkpath
 
 
 def ensure_conda():
@@ -32,11 +33,13 @@ def install_conda_exe():
     elif platform.system() == "Darwin":
         conda_exe_file = "conda-latest-osx-64.exe"
     else:
+        # TODO: Support windows here
         raise ValueError(f"Unsupported platform: {platform.system()}")
 
     resp = requests.get(f"{conda_exe_prefix}/{conda_exe_file}", allow_redirects=True)
     resp.raise_for_status()
-    target_filename = os.path.expanduser("~/.local/conda.exe")
+    mkpath(CONDAX_LINK_DESTINATION)
+    target_filename = os.path.expanduser(os.path.join(CONDAX_LINK_DESTINATION))
     with open(target_filename, "wb") as fo:
         fo.write(resp.content)
     st = os.stat(target_filename)
@@ -78,20 +81,21 @@ def remove_conda_env(package):
             conda_exe,
             "remove",
             "--prefix",
-            f"{CONDA_ENV_PREFIX_PATH}/{package}",
+            os.path.join(f"{CONDA_ENV_PREFIX_PATH}", package),
             "--all",
         ]
     )
 
 
 def conda_env_prefix(package):
-    return f"{CONDA_ENV_PREFIX_PATH}/{package}"
+    return os.path.join("{CONDA_ENV_PREFIX_PATH}", package)
 
 
 def detemine_executables_from_env(package):
     env_prefix = conda_env_prefix(package)
 
-    for file_name in glob.glob(f"{env_prefix}/conda-meta/{package}*.json"):
+    glob_pattern = os.path.join(env_prefix, "conda-meta", f"{package}*.json")
+    for file_name in glob.glob(glob_pattern):
         with open(file_name, "r") as fo:
             package_info = json.load(fo)
             if package_info["name"] == package:
@@ -100,6 +104,7 @@ def detemine_executables_from_env(package):
                     for fn in package_info["files"]
                     if fn.startswith("bin/") or fn.startswith("sbin/")
                 ]
+                # TODO: Handle windows style paths
                 break
     else:
         raise ValueError("Could not determine package files")
