@@ -10,6 +10,6 @@ nav:
   - Home: "index.md"
   - Installation: "installation.md"
   - Commands: "commands.md"
-  - How pipx works: "how-this-works.md"
+  - How condax works: "how-this-works.md"
   - Contributing: "contributing.md"
   - Changelog: "changelog.md"
