@@ -3,6 +3,7 @@ repos:
   rev: v4.3.21
   hooks:
   - id: isort
+    args: [--multi-line=3, --trailing-comma, --force-grid-wrap=0, --use-parentheses, --line-width=88]
 
 - repo: https://github.com/psf/black
   rev: 19.10b0

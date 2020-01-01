@@ -18,9 +18,18 @@ def cli():
     provided by it to `{config.CONDAX_LINK_DESTINATION}`.
     """
 )
+@click.option(
+    "--channel",
+    "c",
+    multiple=True,
+    help=f"""Use the channels specified to install.  If not specified condax will 
+    default to using {config.DEFAULT_CHANNELS}.""",
+)
 @click.argument("package")
-def install(package):
-    core.install_package(package)
+def install(channel, package):
+    if channel is None or (len(channel) == 0):
+        channel = config.DEFAULT_CHANNELS
+    core.install_package(package, channel=channel)
 
 
 @cli.command(

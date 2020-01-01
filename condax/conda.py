@@ -6,10 +6,11 @@ import platform
 import shutil
 import stat
 import subprocess
+from textwrap import dedent
 
 import requests
 
-from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION
+from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION, DEFAULT_CHANNELS
 from .paths import mkpath
 
 
@@ -52,26 +53,42 @@ def ensure_dest_prefix():
         os.mkdir(CONDA_ENV_PREFIX_PATH)
 
 
-def create_conda_environment(package):
+def write_condarc_to_prefix(prefix, channels, channel_priority="strict"):
+    """Create a condarc with the channel priority used for installing the given tool.
+
+    Earlier channels have higher priority"""
+    with open(os.path.join(prefix, "condarc"), "w") as fo:
+        fo.write(f"channel_priority: {channel_priority}\n")
+        if channels:
+            fo.write("channels:\n")
+            for channel in channels:
+                fo.write(f"  - {channel}\n")
+        fo.write("\n")
+
+
+def create_conda_environment(package, channels=DEFAULT_CHANNELS):
     conda_exe = ensure_conda()
+    prefix = conda_env_prefix(package)
+
+    channels_args = []
+    for c in channels:
+        channels_args.extend(["--channel", c])
 
     subprocess.check_call(
         [
             conda_exe,
             "create",
             "--prefix",
-            os.path.join(CONDA_ENV_PREFIX_PATH, package),
+            prefix,
             "--override-channels",
-            # TODO: allow configuring this
-            "--channel",
-            "conda-forge",
-            "--channel",
-            "defaults",
+            *channels_args,
             "--quiet",
             "--yes",
             package,
         ]
     )
+
+    write_condarc_to_prefix(prefix, channels)
 
 
 def remove_conda_env(package):
@@ -86,7 +103,7 @@ def update_conda_env(package):
     conda_exe = ensure_conda()
 
     subprocess.check_call(
-        [conda_exe, "update", "--prefix", conda_env_prefix(package), "--all",, "--yes"]
+        [conda_exe, "update", "--prefix", conda_env_prefix(package), "--all", "--yes"]
     )
 
 
