@@ -68,6 +68,7 @@ def create_conda_environment(package):
             "--channel",
             "defaults",
             "--quiet",
+            "--yes",
             package,
         ]
     )
@@ -77,7 +78,7 @@ def remove_conda_env(package):
     conda_exe = ensure_conda()
 
     subprocess.check_call(
-        [conda_exe, "remove", "--prefix", conda_env_prefix(package), "--all",]
+        [conda_exe, "remove", "--prefix", conda_env_prefix(package), "--all", "--yes",]
     )
 
 
@@ -85,7 +86,7 @@ def update_conda_env(package):
     conda_exe = ensure_conda()
 
     subprocess.check_call(
-        [conda_exe, "update", "--prefix", conda_env_prefix(package), "--all",]
+        [conda_exe, "update", "--prefix", conda_env_prefix(package), "--all",, "--yes"]
     )
 
 
