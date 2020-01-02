@@ -11,3 +11,4 @@ dist/
 docs/build/
 venv/
 wheelhouse/
+pip-wheel-metadata/

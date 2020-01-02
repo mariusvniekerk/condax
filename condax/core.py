@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 from . import conda
-from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION
+from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION, DEFAULT_CHANNELS
 from .paths import mkpath
 
 
@@ -11,6 +11,11 @@ def create_links(executables_to_link):
     for exe in executables_to_link:
         executable_name = os.path.basename(exe)
         os.symlink(exe, f"{CONDAX_LINK_DESTINATION}/{executable_name}")
+    if len(executables_to_link):
+        print("Created the following entrypoint links:", file=sys.stderr)
+        for exe in executables_to_link:
+            executable_name = os.path.basename(exe)
+            print(f"    {executable_name}", file=sys.stderr)
 
 
 def remove_links(executables_to_unlink):
@@ -19,10 +24,15 @@ def remove_links(executables_to_unlink):
         link_name = f"{CONDAX_LINK_DESTINATION}/{executable_name}"
         if os.path.islink(link_name) and (os.readlink(link_name) == exe):
             os.unlink(link_name)
+    if len(executables_to_unlink):
+        print("Removed the following entrypoint links:", file=sys.stderr)
+        for exe in executables_to_unlink:
+            executable_name = os.path.basename(exe)
+            print(f"    {executable_name}", file=sys.stderr)
 
 
-def install_package(package):
-    conda.create_conda_environment(package)
+def install_package(package, channels=DEFAULT_CHANNELS):
+    conda.create_conda_environment(package, channels=channels)
     executables_to_link = conda.detemine_executables_from_env(package)
     mkpath(CONDAX_LINK_DESTINATION)
     create_links(executables_to_link)

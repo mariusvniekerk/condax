@@ -10,6 +10,7 @@ nav:
   - Home: "index.md"
   - Installation: "installation.md"
   - Commands: "commands.md"
+  - Configuration: "config.md"
   - How condax works: "how-this-works.md"
   - Contributing: "contributing.md"
   - Changelog: "changelog.md"

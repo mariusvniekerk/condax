@@ -20,7 +20,7 @@ def cli():
 )
 @click.option(
     "--channel",
-    "c",
+    "-c",
     multiple=True,
     help=f"""Use the channels specified to install.  If not specified condax will 
     default to using {config.DEFAULT_CHANNELS}.""",
@@ -29,7 +29,7 @@ def cli():
 def install(channel, package):
     if channel is None or (len(channel) == 0):
         channel = config.DEFAULT_CHANNELS
-    core.install_package(package, channel=channel)
+    core.install_package(package, channels=channel)
 
 
 @cli.command(

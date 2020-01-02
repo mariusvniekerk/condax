@@ -21,6 +21,12 @@ Presently only the latest version of a given package can be installed.
 > condax install PACKAGE
 ```
 
+Conddax also supports using a non-standard set of channels to install a given package.  These are passed onto conda as expected
+
+```bash
+> condax install -c HIGHEST_PRIORITY_CHANNEL -c OTHER_CHANNEL -c defaults PACKAGE 
+```
+
 ## `condax remove`
 
 Removes an already installed package.  This will also remove the conda environment that was created for that package.
