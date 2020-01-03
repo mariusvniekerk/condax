@@ -12,3 +12,5 @@ docs/build/
 venv/
 wheelhouse/
 pip-wheel-metadata/
+# Rever
+rever/

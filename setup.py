@@ -25,6 +25,7 @@ setup(
     version="0.0.3",
     description="Install and run applications packaged with conda in isolated environments",
     long_description=readme,
+    long_description_content_type="text/markdown",
     author="Marius van Niekerk",
     author_email="marius.v.niekerk@gmail.com",
     maintainer="Marius van Niekerk",
