@@ -49,7 +49,7 @@ def remove(package):
     help="""
     Ensure the condax links directory is on $PATH.
 
-    This can updatae shell configuration files like `~/.bashrc`."""
+    This can update shell configuration files like `~/.bashrc`."""
 )
 def ensure_path():
     paths.add_path_to_environment(config.CONDAX_LINK_DESTINATION)
