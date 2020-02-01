@@ -24,11 +24,9 @@ def create_link(exe):
         os.symlink(exe, f"{CONDAX_LINK_DESTINATION}/{executable_name}")
 
 
-
 def create_links(executables_to_link):
     for exe in executables_to_link:
-        executable_name = os.path.basename(exe)
-        os.symlink(exe, f"{CONDAX_LINK_DESTINATION}/{executable_name}")
+        create_link(exe)
     if len(executables_to_link):
         print("Created the following entrypoint links:", file=sys.stderr)
         for exe in executables_to_link:
