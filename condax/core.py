@@ -21,6 +21,7 @@ def create_link(exe):
                 f'CALL "{win_path}" %*',
             ])
     else:
+        print(os.listdir(CONDAX_LINK_DESTINATION))
         os.symlink(exe, f"{CONDAX_LINK_DESTINATION}/{executable_name}")
 
 

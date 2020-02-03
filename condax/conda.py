@@ -39,7 +39,7 @@ def install_conda_exe():
     resp = requests.get(f"{conda_exe_prefix}/{conda_exe_file}", allow_redirects=True)
     resp.raise_for_status()
     mkpath(CONDAX_LINK_DESTINATION)
-    target_filename = os.path.expanduser(os.path.join(CONDAX_LINK_DESTINATION))
+    target_filename = os.path.expanduser(os.path.join(CONDAX_LINK_DESTINATION, 'conda.exe'))
     with open(target_filename, "wb") as fo:
         fo.write(resp.content)
     st = os.stat(target_filename)
@@ -129,15 +129,16 @@ def detemine_executables_from_env(package):
         raise ValueError("Could not determine package files")
 
     pathext = os.environ.get('PATHEXT', '').split(';')
-    executables = []
+    executables = set()
     for fn in potential_executables:
         abs_executable_path = f"{env_prefix}/{fn}"
         # unix
         if os.access(abs_executable_path, os.X_OK):
-            executables.append(abs_executable_path)
+            executables.add(abs_executable_path)
         # windows
         for ext in pathext:
-            if abs_executable_path.endswith(ext):
-                executables.append(abs_executable_path)
+            if ext and abs_executable_path.endswith(ext):
+                executables.add(abs_executable_path)
 
+    print(executables)
     return executables

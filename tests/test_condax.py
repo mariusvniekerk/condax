@@ -33,4 +33,4 @@ def test_pipx_install_roundtrip(conf):
     # remove the env
     remove_package("jq")
     post_remove = which("jq")
-    assert (post_remove is None) or (not post_remove.startswith[conf["link"]])
+    assert (post_remove is None) or (not post_remove.startswith(conf["link"]))
