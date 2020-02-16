@@ -1,8 +1,7 @@
 import os
+import pathlib
 import subprocess
 import sys
-import os
-import pathlib
 
 from . import conda
 from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION, DEFAULT_CHANNELS
