@@ -45,10 +45,18 @@ jobs:
     - name: Use library to add a package
       run: |
         condax install black
-    
+
     - name: Run the installed package
       run: |
+        export PATH="$PATH:${HOME}/.local/bin"
         black --help
+      if: ${{ matrix.os }} != windows-latest
+
+    - name: Run the installed package
+      run: |
+        SET PATH="%PATH%;%HOME%\.local\bin"
+        black --help
+      if: ${{ matrix.os }} == windows-latest
 
     - name: Remove the installed package
       run: |
