@@ -1,0 +1,18 @@
+*.log
+*.pyc
+.cache/
+.coverage
+.idea/
+.mypy_cache/
+.vscode/
+condax.egg-info/
+build/
+dist/
+docs/build/
+venv/
+wheelhouse/
+pip-wheel-metadata/
+# Rever
+rever/
+
+Dockerfile

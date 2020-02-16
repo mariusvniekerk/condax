@@ -6,7 +6,6 @@ import platform
 import shutil
 import stat
 import subprocess
-from textwrap import dedent
 
 import requests
 
@@ -40,7 +39,9 @@ def install_conda_exe():
     resp = requests.get(f"{conda_exe_prefix}/{conda_exe_file}", allow_redirects=True)
     resp.raise_for_status()
     mkpath(CONDAX_LINK_DESTINATION)
-    target_filename = os.path.expanduser(os.path.join(CONDAX_LINK_DESTINATION))
+    target_filename = os.path.expanduser(
+        os.path.join(CONDAX_LINK_DESTINATION, "conda.exe")
+    )
     with open(target_filename, "wb") as fo:
         fo.write(resp.content)
     st = os.stat(target_filename)
@@ -95,7 +96,7 @@ def remove_conda_env(package):
     conda_exe = ensure_conda()
 
     subprocess.check_call(
-        [conda_exe, "remove", "--prefix", conda_env_prefix(package), "--all", "--yes",]
+        [conda_exe, "remove", "--prefix", conda_env_prefix(package), "--all", "--yes"]
     )
 
 
@@ -122,17 +123,26 @@ def detemine_executables_from_env(package):
                 potential_executables = [
                     fn
                     for fn in package_info["files"]
-                    if fn.startswith("bin/") or fn.startswith("sbin/")
+                    if fn.startswith("bin/")
+                    or fn.startswith("sbin/")
+                    or fn.lower().startswith("scripts/")
                 ]
                 # TODO: Handle windows style paths
                 break
     else:
         raise ValueError("Could not determine package files")
 
-    executables = []
+    pathext = os.environ.get("PATHEXT", "").split(";")
+    executables = set()
     for fn in potential_executables:
         abs_executable_path = f"{env_prefix}/{fn}"
+        # unix
         if os.access(abs_executable_path, os.X_OK):
-            executables.append(abs_executable_path)
+            executables.add(abs_executable_path)
+        # windows
+        for ext in pathext:
+            if ext and abs_executable_path.endswith(ext):
+                executables.add(abs_executable_path)
 
+    print(executables)
     return executables
