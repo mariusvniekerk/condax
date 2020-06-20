@@ -17,7 +17,7 @@ This allows you to install *any* application packaged with conda instead of just
 
 ```bash
 > conda install condax
-> condax ensure_path
+> condax ensure-path
 ```
 
 ### Usage
