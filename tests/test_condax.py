@@ -34,3 +34,15 @@ def test_pipx_install_roundtrip(conf):
     remove_package("jq")
     post_remove = which("jq")
     assert (post_remove is None) or (not post_remove.startswith(conf["link"]))
+
+
+def test_condax_install_double(conf):
+    from condax.core import install_package, remove_package
+
+    install_package("jq")
+    install_package("jq")
+
+    # ensure that the executable installed is on PATH
+    subprocess.check_call(["jq", "--help"])
+
+    remove_package("jq")

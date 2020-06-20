@@ -10,6 +10,7 @@ def write_activating_entrypoint_unix(executable, prefix):
         exec "{executable}" "$@"
         """
     ).strip()
+    return template
 
 
 def write_activating_entrypoint_windows(executable, prefix):
@@ -21,3 +22,5 @@ def write_activating_entrypoint_windows(executable, prefix):
         CALL "{executable}" "%@%"
         """
     ).strip()
+    return template
+

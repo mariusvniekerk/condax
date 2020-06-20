@@ -2,10 +2,51 @@ import os
 import pathlib
 import subprocess
 import sys
+import tempfile
 
 from . import conda
 from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION, DEFAULT_CHANNELS
 from .paths import mkpath
+
+
+def symlink(target, link_name, overwrite=False):
+    """
+    https://stackoverflow.com/questions/8299386/
+
+    Create a symbolic link named link_name pointing to target.
+    If link_name exists then FileExistsError is raised, unless overwrite=True.
+    When trying to overwrite a directory, IsADirectoryError is raised.
+    """
+    if not overwrite:
+        os.symlink(target, link_name)
+        return
+
+    # os.replace() may fail if files are on different filesystems
+    link_dir = os.path.dirname(link_name)
+
+    # Create link to target with temporary filename
+    while True:
+        temp_link_name = tempfile.mktemp(dir=link_dir)
+
+        # os.* functions mimic as closely as possible system functions
+        # The POSIX symlink() returns EEXIST if link_name already exists
+        # https://pubs.opengroup.org/onlinepubs/9699919799/functions/symlink.html
+        try:
+            os.symlink(target, temp_link_name)
+            break
+        except FileExistsError:
+            pass
+
+    # Replace link_name with temp_link_name
+    try:
+        # Pre-empt os.replace on a directory with a nicer message
+        if os.path.isdir(link_name):
+            raise IsADirectoryError(f"Cannot symlink over existing directory: '{link_name}'")
+        os.replace(temp_link_name, link_name)
+    except:
+        if os.path.islink(temp_link_name):
+            os.remove(temp_link_name)
+        raise
 
 
 def create_link(exe):
@@ -17,8 +58,7 @@ def create_link(exe):
         with open(f"{CONDAX_LINK_DESTINATION}/{name_only}.bat", "w") as fo:
             fo.writelines(["REM Entrypoint created by condax", f'CALL "{win_path}" %*'])
     else:
-        print(os.listdir(CONDAX_LINK_DESTINATION))
-        os.symlink(exe, f"{CONDAX_LINK_DESTINATION}/{executable_name}")
+        symlink(exe, f"{CONDAX_LINK_DESTINATION}/{executable_name}", overwrite=True)
 
 
 def create_links(executables_to_link):
