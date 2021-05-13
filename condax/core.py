@@ -15,7 +15,8 @@ def create_link(exe):
         win_path = pathlib.PureWindowsPath(exe)
         name_only, _ = os.path.splitext(executable_name)
         with open(f"{CONDAX_LINK_DESTINATION}/{name_only}.bat", "w") as fo:
-            fo.writelines(["REM Entrypoint created by condax", f'CALL "{win_path}" %*'])
+            fo.writelines(["@echo off\n", "REM Entrypoint created by condax\n",
+                           f'CALL "{win_path}" %*'])
     else:
         print(os.listdir(CONDAX_LINK_DESTINATION))
         os.symlink(exe, f"{CONDAX_LINK_DESTINATION}/{executable_name}")
