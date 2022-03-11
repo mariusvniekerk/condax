@@ -13,7 +13,7 @@ def cli():
 @cli.command(
     help=f"""
     Install a package with condax.
-    
+
     This will install a package into a new conda environment and link the executable
     provided by it to `{config.CONDAX_LINK_DESTINATION}`.
     """
@@ -22,7 +22,7 @@ def cli():
     "--channel",
     "-c",
     multiple=True,
-    help=f"""Use the channels specified to install.  If not specified condax will 
+    help=f"""Use the channels specified to install.  If not specified condax will
     default to using {config.DEFAULT_CHANNELS}.""",
 )
 @click.argument("package")
@@ -35,7 +35,7 @@ def install(channel, package):
 @cli.command(
     help="""
     Remove a package installed by condax.
-    
+
     This will remove a package installed with condax and destroy the underlying
     conda environment.
     """
@@ -43,6 +43,17 @@ def install(channel, package):
 @click.argument("package")
 def remove(package):
     core.remove_package(package)
+
+
+@cli.command(
+    help="""
+    List packages installed by condax.
+
+    This will show all packages installed by condax.
+    """
+)
+def list():
+    core.list_all_packages()
 
 
 @cli.command(
@@ -58,7 +69,7 @@ def ensure_path():
 @cli.command(
     help="""
     Update package(s) installed by condax.
-    
+
     This will update the underlying conda environments(s) to the latest release of a package.
 """
 )

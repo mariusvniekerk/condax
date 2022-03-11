@@ -1,5 +1,6 @@
 import os
 import pathlib
+import shlex
 import subprocess
 import shutil
 import sys
@@ -87,6 +88,35 @@ def update_all_packages():
     for package in os.listdir(CONDA_ENV_PREFIX_PATH):
         if os.path.isdir(os.path.join(CONDA_ENV_PREFIX_PATH, package)):
             update_package(package)
+
+
+def list_all_packages():
+    packages = []
+    for package in os.listdir(CONDA_ENV_PREFIX_PATH):
+        if os.path.isdir(os.path.join(CONDA_ENV_PREFIX_PATH, package)):
+            packages.append(package)
+    packages.sort()
+
+    # messages follow pipx's text format
+    print(f"conda envs are in {CONDA_ENV_PREFIX_PATH}")
+    print(f"apps are exposed on your $PATH at {CONDAX_LINK_DESTINATION}")
+    for package in packages:
+        _, python_version, _ = conda.get_package_info(package, "python")
+        package_name, package_version, package_build = conda.get_package_info(package)
+        package_header = "".join([
+            f"  package {shlex.quote(package_name)}",
+            f" {package_version} ({package_build})",
+            f", installed using Python {python_version}" if python_version else "",
+        ])
+        print(package_header)
+
+        try:
+            paths = conda.detemine_executables_from_env(package)
+            names = [os.path.basename(path) for path in paths]
+            for name in sorted(names):
+                print(f"    - {name}")
+        except ValueError:
+            print("    (no executables found)")
 
 
 def update_package(package):

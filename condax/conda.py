@@ -112,6 +112,28 @@ def conda_env_prefix(package):
     return os.path.join(CONDA_ENV_PREFIX_PATH, package)
 
 
+def get_package_info(package, specific_name=None):
+    env_prefix = conda_env_prefix(package)
+    package_name = package if specific_name is None else specific_name
+    glob_pattern = os.path.join(env_prefix, "conda-meta", f"{package_name}*.json")
+    try:
+        for file_name in glob.glob(glob_pattern):
+            with open(file_name, "r") as fo:
+                package_info = json.load(fo)
+                if package_info["name"] == package_name:
+                    name = package_info["name"]
+                    version = package_info["version"]
+                    build = package_info["build"]
+                    return (name, version, build)
+    except ValueError:
+        logging.info("".join([
+            f"Could not retrieve package info: {package}",
+            f" - {specific_name}" if specific_name else "",
+        ]))
+
+    return (None, None, None)
+
+
 def detemine_executables_from_env(package):
     env_prefix = conda_env_prefix(package)
 
@@ -144,5 +166,4 @@ def detemine_executables_from_env(package):
             if ext and abs_executable_path.endswith(ext):
                 executables.add(abs_executable_path)
 
-    print(executables)
     return executables
