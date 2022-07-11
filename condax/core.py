@@ -1,6 +1,7 @@
 import os
 import pathlib
 import subprocess
+import shutil
 import sys
 
 from . import conda
@@ -8,7 +9,7 @@ from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION, DEFAULT_CHAN
 from .paths import mkpath
 
 
-def create_link(exe):
+def create_link(package, exe):
     executable_name = os.path.basename(exe)
     if os.name == "nt":
         # create a batch file to run our application
@@ -19,17 +20,25 @@ def create_link(exe):
                 [
                     "@echo off\n",
                     "REM Entrypoint created by condax\n",
-                    f'CALL "{win_path}" %*',
+                    f"conda run --name {package} %*\n",
                 ]
             )
     else:
-        print(os.listdir(CONDAX_LINK_DESTINATION))
-        os.symlink(exe, f"{CONDAX_LINK_DESTINATION}/{executable_name}")
+        script_path = os.path.join(CONDAX_LINK_DESTINATION, executable_name)
+        with open(script_path, "w") as fo:
+            fo.writelines(
+                [
+                    f"#!/usr/bin/env bash\n\n",
+                    f"# Entrypoint created by condax\n",
+                    f"conda run --name {package} $@\n",
+                ]
+            )
+        shutil.copystat(exe, script_path)
 
 
-def create_links(executables_to_link):
+def create_links(package, executables_to_link):
     for exe in executables_to_link:
-        create_link(exe)
+        create_link(package, exe)
     if len(executables_to_link):
         print("Created the following entrypoint links:", file=sys.stderr)
         for exe in executables_to_link:
@@ -54,7 +63,7 @@ def install_package(package, channels=DEFAULT_CHANNELS):
     conda.create_conda_environment(package, channels=channels)
     executables_to_link = conda.detemine_executables_from_env(package)
     mkpath(CONDAX_LINK_DESTINATION)
-    create_links(executables_to_link)
+    create_links(package, executables_to_link)
     print(f"`{package}` has been installed by condax", file=sys.stderr)
 
 
@@ -92,7 +101,7 @@ def update_package(package):
         to_create = executables_linked_in_updated - executables_already_linked
         to_delete = executables_already_linked - executables_linked_in_updated
 
-        create_links(to_create)
+        create_links(package, to_create)
         remove_links(to_delete)
         print(f"{package} update successfully")
 
