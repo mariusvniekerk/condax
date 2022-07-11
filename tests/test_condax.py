@@ -22,7 +22,7 @@ def test_pipx_install_roundtrip(conf):
     from condax.core import install_package, remove_package
 
     start = which("jq")
-    assert (start is None) or (not start.startswith[conf["link"]])
+    assert (start is None) or (not start.startswith(conf["link"]))
     install_package("jq")
     post_install = which("jq")
     assert post_install.startswith(conf["link"])
