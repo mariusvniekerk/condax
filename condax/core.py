@@ -1,3 +1,4 @@
+import collections
 import os
 import pathlib
 import shlex
@@ -103,6 +104,7 @@ def list_all_packages():
         if os.path.isdir(os.path.join(CONDA_ENV_PREFIX_PATH, package)):
             packages.append(package)
     packages.sort()
+    executable_counts = collections.Counter()
 
     # messages follow pipx's text format
     print(f"conda envs are in {CONDA_ENV_PREFIX_PATH}")
@@ -120,10 +122,21 @@ def list_all_packages():
         try:
             paths = conda.detemine_executables_from_env(package)
             names = [os.path.basename(path) for path in paths]
+            executable_counts.update(names)
             for name in sorted(names):
                 print(f"    - {name}")
+
         except ValueError:
             print("    (no executables found)")
+
+
+    # warn if duplicate executables are found
+    duplicates = [name for (name, cnt) in executable_counts.items() if cnt > 1]
+    if duplicates:
+        print(f"\n[warning] The following executables are duplicated:")
+        for name in duplicates:
+            print(f"    * {name}")
+        print()
 
 
 def update_package(package):
