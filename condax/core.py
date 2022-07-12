@@ -17,7 +17,10 @@ def create_link(package, exe):
         # create a batch file to run our application
         win_path = pathlib.PureWindowsPath(exe)
         name_only, _ = os.path.splitext(executable_name)
-        with open(f"{CONDAX_LINK_DESTINATION}/{name_only}.bat", "w") as fo:
+        script_path = os.path.join(CONDAX_LINK_DESTINATION, f"{name_only}.bat")
+        if os.path.exists(script_path):
+            print(f"[warning] {name_only}.bat already exists; overwriting it...")
+        with open(script_path, "w") as fo:
             fo.writelines(
                 [
                     "@echo off\n",
@@ -27,6 +30,9 @@ def create_link(package, exe):
             )
     else:
         script_path = os.path.join(CONDAX_LINK_DESTINATION, executable_name)
+        if os.path.exists(script_path):
+            name = os.path.basename(script_path)
+            print(f"[warning] {name} already exists; overwriting it...")
         with open(script_path, "w") as fo:
             fo.writelines(
                 [
