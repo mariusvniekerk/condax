@@ -13,7 +13,7 @@ def add_path_to_environment(path):
 
     post_install_message = (
         "You likely need to open a new terminal or re-login for changes to your $PATH"
-        "to take effect."
+        " to take effect."
     )
     if userpath.in_current_path(path) or userpath.need_shell_restart(path):
         if userpath.need_shell_restart(path):
