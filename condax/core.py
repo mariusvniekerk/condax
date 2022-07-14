@@ -75,6 +75,22 @@ def install_package(package, channels=DEFAULT_CHANNELS):
     print(f"`{package}` has been installed by condax", file=sys.stderr)
 
 
+def inject_package_to_env(package, env_name, channels=DEFAULT_CHANNELS):
+    if not conda.has_conda_env(env_name):
+        print(f"ERROR: `{env_name}` does not exist; failed to inject `{package}`.", file=sys.stderr)
+        sys.exit(1)
+    conda.inject_to_conda_env(package, env_name, channels)
+    print(f"`{package}` has been injected to `{env_name}`", file=sys.stderr)
+
+
+def uninject_package_from_env(package, env_name):
+    if not conda.has_conda_env(env_name):
+        print(f"ERROR: `{env_name}` does not exist; failed to uninject `{package}`.", file=sys.stderr)
+        sys.exit(1)
+    conda.uninject_from_conda_env(package, env_name)
+    print(f"`{package}` has been uninjected from `{env_name}`", file=sys.stderr)
+
+
 def exit_if_not_installed(package):
     prefix = conda.conda_env_prefix(package)
     if not os.path.exists(prefix):

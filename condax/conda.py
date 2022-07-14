@@ -92,6 +92,43 @@ def create_conda_environment(package, channels=DEFAULT_CHANNELS):
     write_condarc_to_prefix(prefix, channels)
 
 
+def inject_to_conda_env(package, env_name, channels=DEFAULT_CHANNELS):
+    conda_exe = ensure_conda()
+    prefix = conda_env_prefix(env_name)
+    channels_args = [x for c in channels for x in ["--channel", c]]
+
+    subprocess.check_call(
+        [
+            conda_exe,
+            "install",
+            "--prefix",
+            prefix,
+            "--override-channels",
+            *channels_args,
+            "--quiet",
+            "--yes",
+            package,
+        ]
+    )
+
+
+def uninject_from_conda_env(package, env_name):
+    conda_exe = ensure_conda()
+    prefix = conda_env_prefix(env_name)
+
+    subprocess.check_call(
+        [
+            conda_exe,
+            "uninstall",
+            "--prefix",
+            prefix,
+            "--quiet",
+            "--yes",
+            package,
+        ]
+    )
+
+
 def remove_conda_env(package):
     conda_exe = ensure_conda()
 
@@ -106,6 +143,10 @@ def update_conda_env(package):
     subprocess.check_call(
         [conda_exe, "update", "--prefix", conda_env_prefix(package), "--all", "--yes"]
     )
+
+
+def has_conda_env(package: str) -> bool:
+    return os.path.exists(conda_env_prefix(package))
 
 
 def conda_env_prefix(package):

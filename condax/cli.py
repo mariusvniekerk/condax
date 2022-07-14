@@ -55,6 +55,48 @@ def remove(package):
 def list():
     core.list_all_packages()
 
+@cli.command(
+    help="""
+    Inject a package to existing environment created by condax.
+    """
+)
+@click.option(
+    "--channel",
+    "-c",
+    multiple=True,
+    help=f"""Use the channels specified to install.  If not specified condax will
+    default to using {config.DEFAULT_CHANNELS}.""",
+)
+@click.option(
+    "--name",
+    "-n",
+    required=True,
+    type=str,
+    help=f"""Specify existing environment to inject into.""",
+)
+@click.argument("package")
+def inject(package, name, channel):
+    if channel is None or (len(channel) == 0):
+        channel = config.DEFAULT_CHANNELS
+    core.inject_package_to_env(package, name, channels=channel)
+
+
+@cli.command(
+    help="""
+    Uninject a package from existing environment managed by condax.
+    """
+)
+@click.option(
+    "--name",
+    "-n",
+    required=True,
+    type=str,
+    help=f"""Specify existing environment from which uninject a package""",
+)
+@click.argument("package_to_uninject")
+def unject(package_to_uninject, name):
+    core.uninject_package_from_env(package_to_uninject, name)
+
 
 @cli.command(
     help="""
