@@ -135,6 +135,10 @@ def get_package_info(package, specific_name=None):
 
 
 def determine_executables_from_env(package):
+    def is_good(p):
+        parname = os.path.basename(os.path.dirname(p))
+        return parname in ("bin", "sbin", "scripts", "Scripts")
+
     env_prefix = conda_env_prefix(package)
 
     glob_pattern = os.path.join(env_prefix, "conda-meta", f"{package}*.json")
@@ -145,9 +149,9 @@ def determine_executables_from_env(package):
                 potential_executables = [
                     fn
                     for fn in package_info["files"]
-                    if fn.startswith("bin/")
-                    or fn.startswith("sbin/")
-                    or fn.lower().startswith("scripts/")
+                    if (fn.startswith("bin/") and is_good(fn))
+                    or (fn.startswith("sbin/") and is_good(fn))
+                    or (fn.lower().startswith("scripts/") and is_good(fn))
                 ]
                 # TODO: Handle windows style paths
                 break
@@ -167,3 +171,5 @@ def determine_executables_from_env(package):
                 executables.add(abs_executable_path)
 
     return executables
+
+
