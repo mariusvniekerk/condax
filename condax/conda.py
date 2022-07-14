@@ -134,7 +134,7 @@ def get_package_info(package, specific_name=None):
     return (None, None, None)
 
 
-def detemine_executables_from_env(package):
+def determine_executables_from_env(package):
     env_prefix = conda_env_prefix(package)
 
     glob_pattern = os.path.join(env_prefix, "conda-meta", f"{package}*.json")
