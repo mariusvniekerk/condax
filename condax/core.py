@@ -14,6 +14,7 @@ from .paths import mkpath
 def create_link(package, exe):
     executable_name = os.path.basename(exe)
     conda_exe = conda.ensure_conda()
+    prefix = conda.conda_env_prefix(package)
     if os.name == "nt":
         # create a batch file to run our application
         win_path = pathlib.PureWindowsPath(exe)
@@ -26,7 +27,7 @@ def create_link(package, exe):
                 [
                     "@echo off\n",
                     "REM Entrypoint created by condax\n",
-                    f"{conda_exe} run --name {package} %*\n",
+                    f"{conda_exe} run --prefix {prefix} {executable_name} %*\n",
                 ]
             )
     else:
@@ -37,9 +38,10 @@ def create_link(package, exe):
         with open(script_path, "w") as fo:
             fo.writelines(
                 [
-                    f"#!/usr/bin/env bash\n\n",
-                    f"# Entrypoint created by condax\n",
-                    f"{conda_exe} run --name {package} $@\n",
+                    "#!/usr/bin/env bash\n",
+                    "\n"
+                    "# Entrypoint created by condax\n",
+                    f"{conda_exe} run --prefix {prefix} {executable_name} $@\n",
                 ]
             )
         shutil.copystat(exe, script_path)
