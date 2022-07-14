@@ -58,16 +58,13 @@ def create_links(package, executables_to_link):
 
 
 def remove_links(executables_to_unlink):
-    for exe in executables_to_unlink:
-        executable_name = os.path.basename(exe)
-        link_name = f"{CONDAX_LINK_DESTINATION}/{executable_name}"
-        if os.path.islink(link_name) and (os.readlink(link_name) == exe):
-            os.unlink(link_name)
-    if len(executables_to_unlink):
+    if executables_to_unlink:
         print("Removed the following entrypoint links:", file=sys.stderr)
         for exe in executables_to_unlink:
             executable_name = os.path.basename(exe)
             print(f"    {executable_name}", file=sys.stderr)
+            link_name = os.path.join(CONDAX_LINK_DESTINATION, executable_name)
+            os.unlink(link_name)
 
 
 def install_package(package, channels=DEFAULT_CHANNELS):
