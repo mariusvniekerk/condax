@@ -175,18 +175,19 @@ def get_package_info(package, specific_name=None):
     return (None, None, None)
 
 
-def determine_executables_from_env(package):
+def determine_executables_from_env(package, injected_package=None):
     def is_good(p):
         parname = os.path.basename(os.path.dirname(p))
         return parname in ("bin", "sbin", "scripts", "Scripts")
 
     env_prefix = conda_env_prefix(package)
+    target_name = injected_package if injected_package else package
 
-    glob_pattern = os.path.join(env_prefix, "conda-meta", f"{package}*.json")
+    glob_pattern = os.path.join(env_prefix, "conda-meta", f"{target_name}*.json")
     for file_name in glob.glob(glob_pattern):
         with open(file_name, "r") as fo:
             package_info = json.load(fo)
-            if package_info["name"] == package:
+            if package_info["name"] == target_name:
                 potential_executables = [
                     fn
                     for fn in package_info["files"]

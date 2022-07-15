@@ -78,7 +78,7 @@ def list():
 def inject(package, name, channel):
     if channel is None or (len(channel) == 0):
         channel = config.DEFAULT_CHANNELS
-    core.inject_package_to_env(package, name, channels=channel)
+    core.inject_package_to_env(name, package, channels=channel)
 
 
 @cli.command(
@@ -93,9 +93,9 @@ def inject(package, name, channel):
     type=str,
     help=f"""Specify existing environment from which uninject a package""",
 )
-@click.argument("package_to_uninject")
-def unject(package_to_uninject, name):
-    core.uninject_package_from_env(package_to_uninject, name)
+@click.argument("package")
+def unject(package, name):
+    core.uninject_package_from_env(name, package)
 
 
 @cli.command(
