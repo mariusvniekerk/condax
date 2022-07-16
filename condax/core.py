@@ -82,8 +82,9 @@ def inject_package_to_env(env_name, injected_package, channels=DEFAULT_CHANNELS)
         sys.exit(1)
     conda.inject_to_conda_env(injected_package, env_name, channels)
     # TODO: add scripts only if --include-apps
-    executables_to_link = conda.determine_executables_from_env(env_name, injected_package)
-    create_links(env_name, executables_to_link)
+    if False:
+        executables_to_link = conda.determine_executables_from_env(env_name, injected_package)
+        create_links(env_name, executables_to_link)
     print(f"`{injected_package}` has been injected to `{env_name}`", file=sys.stderr)
 
 
@@ -93,8 +94,9 @@ def uninject_package_from_env(env_name, injected_package):
         sys.exit(1)
     conda.uninject_from_conda_env(injected_package, env_name)
     # TODO: remove scripts if injected with  --include-apps
-    executables_to_link = conda.determine_executables_from_env(env_name, injected_package)
-    remove_links(executables_to_link)
+    if False:
+        executables_to_link = conda.determine_executables_from_env(env_name, injected_package)
+        remove_links(executables_to_link)
     print(f"`{injected_package}` has been uninjected from `{env_name}`", file=sys.stderr)
 
 
