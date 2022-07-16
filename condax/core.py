@@ -9,6 +9,7 @@ import sys
 from . import conda
 from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION, DEFAULT_CHANNELS
 from .paths import mkpath
+from . import wrapper
 
 
 def create_link(package, exe):
@@ -57,15 +58,17 @@ def create_links(package, executables_to_link):
             print(f"    {executable_name}", file=sys.stderr)
 
 
-def remove_links(executables_to_unlink):
+def remove_links(package, executables_to_unlink):
     if executables_to_unlink:
         print("Removed the following entrypoint links:", file=sys.stderr)
-        for exe in executables_to_unlink:
-            executable_name = os.path.basename(exe)
+
+    for exe in executables_to_unlink:
+        executable_name = os.path.basename(exe)
+        link_path = os.path.join(CONDAX_LINK_DESTINATION, executable_name)
+        package_wrapper = wrapper.read_env_name(link_path)
+        if package_wrapper == package:
             print(f"    {executable_name}", file=sys.stderr)
-            link_name = os.path.join(CONDAX_LINK_DESTINATION, executable_name)
-            # TODO: Remove only if the script at link_name points the exe path
-            os.unlink(link_name)
+            os.unlink(link_path)
 
 
 def install_package(package, channels=DEFAULT_CHANNELS):
@@ -96,7 +99,7 @@ def uninject_package_from_env(env_name, injected_package):
     # TODO: remove scripts if injected with  --include-apps
     if False:
         executables_to_link = conda.determine_executables_from_env(env_name, injected_package)
-        remove_links(executables_to_link)
+        remove_links(env_name, executables_to_link)
     print(f"`{injected_package}` has been uninjected from `{env_name}`", file=sys.stderr)
 
 
@@ -111,7 +114,7 @@ def remove_package(package):
     exit_if_not_installed(package)
 
     executables_to_unlink = conda.determine_executables_from_env(package)
-    remove_links(executables_to_unlink)
+    remove_links(package, executables_to_unlink)
     conda.remove_conda_env(package)
     print(f"`{package}` has been removed from condax", file=sys.stderr)
 
@@ -176,7 +179,7 @@ def update_package(package):
         to_delete = executables_already_linked - executables_linked_in_updated
 
         create_links(package, to_create)
-        remove_links(to_delete)
+        remove_links(package, to_delete)
         print(f"{package} update successfully")
 
     except subprocess.CalledProcessError:
