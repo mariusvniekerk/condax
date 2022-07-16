@@ -13,14 +13,15 @@ from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION, DEFAULT_CHAN
 from .paths import mkpath
 
 
-def ensure_conda():
-    conda_executable = shutil.which("conda")
-    if conda_executable:
-        return conda_executable
+def ensure_conda(mamba_ok=True):
+    execs = ["conda", "conda.exe"]
+    if mamba_ok:
+        execs.insert(0, "mamba")
 
-    conda_executable = shutil.which("conda.exe")
-    if conda_executable:
-        return conda_executable
+    for conda_exec in execs:
+        conda_path = shutil.which(conda_exec)
+        if conda_path is not None:
+            return conda_path
 
     logging.info("No existing conda installation found.  Installing the standalone")
     return install_conda_exe()

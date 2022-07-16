@@ -14,7 +14,8 @@ from . import wrapper
 
 def create_link(package, exe):
     executable_name = os.path.basename(exe)
-    conda_exe = conda.ensure_conda()
+    # TODO: enable `mamba run` option after hiding the banner
+    conda_exe = conda.ensure_conda(mamba_ok=False)
     prefix = conda.conda_env_prefix(package)
     if os.name == "nt":
         # create a batch file to run our application
