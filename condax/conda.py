@@ -167,10 +167,14 @@ def get_package_info(package, specific_name=None):
                     build = package_info["build"]
                     return (name, version, build)
     except ValueError:
-        logging.info("".join([
-            f"Could not retrieve package info: {package}",
-            f" - {specific_name}" if specific_name else "",
-        ]))
+        logging.info(
+            "".join(
+                [
+                    f"Could not retrieve package info: {package}",
+                    f" - {specific_name}" if specific_name else "",
+                ]
+            )
+        )
 
     return (None, None, None)
 
@@ -213,5 +217,3 @@ def determine_executables_from_env(package, injected_package=None):
                 executables.add(abs_executable_path)
 
     return executables
-
-

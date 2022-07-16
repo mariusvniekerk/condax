@@ -40,7 +40,7 @@ def create_link(package, exe):
             fo.writelines(
                 [
                     "#!/usr/bin/env bash\n",
-                    "\n"
+                    "\n",
                     "# Entrypoint created by condax\n",
                     f"{conda_exe} run --prefix {prefix} {executable_name} $@\n",
                 ]
@@ -49,13 +49,13 @@ def create_link(package, exe):
 
 
 def create_links(package, executables_to_link):
-    for exe in executables_to_link:
-        create_link(package, exe)
-    if len(executables_to_link):
+    if executables_to_link:
         print("Created the following entrypoint links:", file=sys.stderr)
-        for exe in executables_to_link:
-            executable_name = os.path.basename(exe)
-            print(f"    {executable_name}", file=sys.stderr)
+
+    for exe in executables_to_link:
+        executable_name = os.path.basename(exe)
+        print(f"    {executable_name}", file=sys.stderr)
+        create_link(package, exe)
 
 
 def remove_links(package, executables_to_unlink):
@@ -81,26 +81,38 @@ def install_package(package, channels=DEFAULT_CHANNELS):
 
 def inject_package_to_env(env_name, injected_package, channels=DEFAULT_CHANNELS):
     if not conda.has_conda_env(env_name):
-        print(f"ERROR: `{env_name}` does not exist; failed to inject `{injected_package}`.", file=sys.stderr)
+        print(
+            f"ERROR: `{env_name}` does not exist; failed to inject `{injected_package}`.",
+            file=sys.stderr,
+        )
         sys.exit(1)
     conda.inject_to_conda_env(injected_package, env_name, channels)
     # TODO: add scripts only if --include-apps
     if False:
-        executables_to_link = conda.determine_executables_from_env(env_name, injected_package)
+        executables_to_link = conda.determine_executables_from_env(
+            env_name, injected_package
+        )
         create_links(env_name, executables_to_link)
     print(f"`{injected_package}` has been injected to `{env_name}`", file=sys.stderr)
 
 
 def uninject_package_from_env(env_name, injected_package):
     if not conda.has_conda_env(env_name):
-        print(f"ERROR: `{env_name}` does not exist; failed to uninject `{injected_package}`.", file=sys.stderr)
+        print(
+            f"ERROR: `{env_name}` does not exist; failed to uninject `{injected_package}`.",
+            file=sys.stderr,
+        )
         sys.exit(1)
     conda.uninject_from_conda_env(injected_package, env_name)
-    # TODO: remove scripts if injected with  --include-apps
+    # TODO: remove scripts only if injected with --include-apps option
     if False:
-        executables_to_link = conda.determine_executables_from_env(env_name, injected_package)
+        executables_to_link = conda.determine_executables_from_env(
+            env_name, injected_package
+        )
         remove_links(env_name, executables_to_link)
-    print(f"`{injected_package}` has been uninjected from `{env_name}`", file=sys.stderr)
+    print(
+        f"`{injected_package}` has been uninjected from `{env_name}`", file=sys.stderr
+    )
 
 
 def exit_if_not_installed(package):
@@ -139,11 +151,13 @@ def list_all_packages():
     for package in packages:
         _, python_version, _ = conda.get_package_info(package, "python")
         package_name, package_version, package_build = conda.get_package_info(package)
-        package_header = "".join([
-            f"  package {shlex.quote(package_name)}",
-            f" {package_version} ({package_build})",
-            f", installed using Python {python_version}" if python_version else "",
-        ])
+        package_header = "".join(
+            [
+                f"  package {shlex.quote(package_name)}",
+                f" {package_version} ({package_build})",
+                f", installed using Python {python_version}" if python_version else "",
+            ]
+        )
         print(package_header)
 
         try:
@@ -155,7 +169,6 @@ def list_all_packages():
 
         except ValueError:
             print("    (no executables found)")
-
 
     # warn if duplicate executables are found
     duplicates = [name for (name, cnt) in executable_counts.items() if cnt > 1]
