@@ -10,6 +10,7 @@ from . import conda
 from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION, DEFAULT_CHANNELS
 from .paths import mkpath
 from . import wrapper
+import condax.utils as utils
 
 
 def create_link(package, exe):
@@ -73,21 +74,27 @@ def remove_links(package, executables_to_unlink):
 
 
 def install_package(package, channels=DEFAULT_CHANNELS):
-    conda.create_conda_environment(package, channels=channels)
+    # package match specifications
+    # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
+    package, match_specs = utils.split_match_specs(package)
+    conda.create_conda_environment(package, channels=channels, match_specs=match_specs)
     executables_to_link = conda.determine_executables_from_env(package)
     mkpath(CONDAX_LINK_DESTINATION)
     create_links(package, executables_to_link)
     print(f"`{package}` has been installed by condax", file=sys.stderr)
 
 
-def inject_package_to_env(env_name, injected_package, channels=DEFAULT_CHANNELS):
+def inject_package_to_env(env_name, injected_package, channels=DEFAULT_CHANNELS, match_specs=""):
     if not conda.has_conda_env(env_name):
         print(
             f"ERROR: `{env_name}` does not exist; failed to inject `{injected_package}`.",
             file=sys.stderr,
         )
         sys.exit(1)
-    conda.inject_to_conda_env(injected_package, env_name, channels)
+    # package match specifications
+    # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
+    injected_package, match_specs = utils.split_match_specs(injected_package)
+    conda.inject_to_conda_env(injected_package, env_name, channels=channels, match_specs=match_specs)
     # TODO: add scripts only if --include-apps
     if False:
         executables_to_link = conda.determine_executables_from_env(

@@ -68,7 +68,7 @@ def write_condarc_to_prefix(prefix, channels, channel_priority="strict"):
         fo.write("\n")
 
 
-def create_conda_environment(package, channels=DEFAULT_CHANNELS):
+def create_conda_environment(package, channels=DEFAULT_CHANNELS, match_specs=""):
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(package)
 
@@ -86,14 +86,14 @@ def create_conda_environment(package, channels=DEFAULT_CHANNELS):
             *channels_args,
             "--quiet",
             "--yes",
-            package,
+            package + match_specs,
         ]
     )
 
     write_condarc_to_prefix(prefix, channels)
 
 
-def inject_to_conda_env(package, env_name, channels=DEFAULT_CHANNELS):
+def inject_to_conda_env(package, env_name, channels=DEFAULT_CHANNELS, match_specs=""):
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
     channels_args = [x for c in channels for x in ["--channel", c]]
@@ -108,7 +108,7 @@ def inject_to_conda_env(package, env_name, channels=DEFAULT_CHANNELS):
             *channels_args,
             "--quiet",
             "--yes",
-            package,
+            package + match_specs,
         ]
     )
 
