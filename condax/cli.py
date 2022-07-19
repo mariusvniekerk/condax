@@ -34,7 +34,7 @@ def install(channel, package):
 
 @cli.command(
     help="""
-    Remove a package installed by condax.
+    Remove a package.
 
     This will remove a package installed with condax and destroy the underlying
     conda environment.
@@ -47,7 +47,17 @@ def remove(package):
 
 @cli.command(
     help="""
-    List packages installed by condax.
+    Alias for conda remove.
+    """
+)
+@click.argument("package")
+def uninstall(package):
+    core.remove_package(package)
+
+
+@cli.command(
+    help="""
+    List packages managed by condax.
 
     This will show all packages installed by condax.
     """

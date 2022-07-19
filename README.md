@@ -17,6 +17,7 @@ Condax is inspired by the excellent [pipx](https://github.com/pipxproject/pipx),
     - The app installation directory is populated with scripts rather than symbolic links.
     - ➡️ Solves [the issue](https://github.com/mariusvniekerk/condax/issues/13) with non-Python packages
 - Overwrites an executable wrapper if already exists in the app directory.
+- Introduce `condax uninstall` as an alias of `condax remove`.
 - Minor bugfixes
 
 ## Installation
