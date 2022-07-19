@@ -185,7 +185,7 @@ def list_all_packages(short=False):
                 [
                     f"  package {shlex.quote(package_name)}",
                     f" {package_version} ({package_build})",
-                    f", installed using Python {python_version}" if python_version else "",
+                    f", using Python {python_version}" if python_version else "",
                 ]
             )
             print(package_header)
