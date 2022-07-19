@@ -2,14 +2,14 @@ import os
 
 import yaml
 
-_condaxrc_path = os.path.expanduser(os.path.join("~", ".condaxrc"))
+_condaxrc_path = os.path.expanduser(os.path.join("~", ".local", "condax", "config.yaml"))
 if os.path.exists(_condaxrc_path):
     with open(_condaxrc_path, "r") as fo:
         _config = yaml.safe_load(fo)
 else:
     _config = {}
 
-_config.setdefault("prefix_path", os.path.join("~", ".condax"))
+_config.setdefault("prefix_path", os.path.join("~", ".local", "condax", "envs"))
 _config.setdefault(
     "link_destination", os.path.expanduser(os.path.join("~", ".local", "bin"))
 )
