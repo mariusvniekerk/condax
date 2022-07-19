@@ -52,8 +52,14 @@ def remove(package):
     This will show all packages installed by condax.
     """
 )
-def list():
-    core.list_all_packages()
+@click.option(
+    "--short",
+    is_flag=True,
+    default=False,
+    help="List packages only.",
+)
+def list(short):
+    core.list_all_packages(short)
 
 @cli.command(
     help="""
