@@ -77,6 +77,14 @@ def install_package(package, channels=DEFAULT_CHANNELS):
     # package match specifications
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
     package, match_specs = utils.split_match_specs(package)
+
+    if conda.has_conda_env(package):
+        print(
+            f"`{package}` is already installed. Run `condax update {package}` to update.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     conda.create_conda_environment(package, channels=channels, match_specs=match_specs)
     executables_to_link = conda.determine_executables_from_env(package)
     mkpath(CONDAX_LINK_DESTINATION)
