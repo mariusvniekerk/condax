@@ -217,4 +217,4 @@ def determine_executables_from_env(package, injected_package=None):
             if ext and abs_executable_path.endswith(ext):
                 executables.add(abs_executable_path)
 
-    return executables
+    return sorted(executables)
