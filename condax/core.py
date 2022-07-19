@@ -92,17 +92,22 @@ def install_package(package, channels=DEFAULT_CHANNELS):
     print(f"`{package}` has been installed by condax", file=sys.stderr)
 
 
-def inject_package_to_env(env_name, injected_package, channels=DEFAULT_CHANNELS, match_specs=""):
+def inject_package_to_env(
+    env_name, injected_package, channels=DEFAULT_CHANNELS, match_specs=""
+):
     if not conda.has_conda_env(env_name):
         print(
-            f"ERROR: `{env_name}` does not exist; failed to inject `{injected_package}`.",
+            f"`{env_name}` does not exist; Abort injecting `{injected_package}`...",
             file=sys.stderr,
         )
         sys.exit(1)
+
     # package match specifications
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
     injected_package, match_specs = utils.split_match_specs(injected_package)
-    conda.inject_to_conda_env(injected_package, env_name, channels=channels, match_specs=match_specs)
+    conda.inject_to_conda_env(
+        injected_package, env_name, channels=channels, match_specs=match_specs
+    )
     # TODO: add scripts only if --include-apps
     if False:
         executables_to_link = conda.determine_executables_from_env(
@@ -115,10 +120,11 @@ def inject_package_to_env(env_name, injected_package, channels=DEFAULT_CHANNELS,
 def uninject_package_from_env(env_name, injected_package):
     if not conda.has_conda_env(env_name):
         print(
-            f"ERROR: `{env_name}` does not exist; failed to uninject `{injected_package}`.",
+            f"`{env_name}` does not exist; Abort uninjecting `{injected_package}`...",
             file=sys.stderr,
         )
         sys.exit(1)
+
     conda.uninject_from_conda_env(injected_package, env_name)
     # TODO: remove scripts only if injected with --include-apps option
     if False:
