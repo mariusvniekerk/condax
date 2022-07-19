@@ -11,7 +11,7 @@ Condax is inspired by the excellent [pipx](https://github.com/pipxproject/pipx),
 - Supports `condax list` to display installed packages and executables.
 - Supports `condax inject` and `condax uninject` to add/remove a package to existing environment.
 - Use `mamba` internally if available.
-- Supports selecting a specifc version of a package.
+- Supports specifying version of a package, like `condax install jq=1.6`.
     - See [package match specifications](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications) for the detail.
 - Works as a thin wrapper using `conda run` instead of symbolic links.
     - The app installation directory is populated with scripts rather than symbolic links.
