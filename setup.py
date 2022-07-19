@@ -22,7 +22,7 @@ REQUIRES = ["click", "requests", "userpath", "PyYAML"]
 
 setup(
     name="condax",
-    version="0.0.5",
+    version="0.0.6",
     description="Install and run applications packaged with conda in isolated environments",
     long_description=readme,
     long_description_content_type="text/markdown",
