@@ -1,17 +1,24 @@
 import sys
+import textwrap
 
 import click
 
 from . import config, core, paths
 
 
-@click.group(help="Install and execute applications packaged by conda.")
+@click.group(
+    help=textwrap.dedent(f"""Install and execute applications packaged by conda.
+
+    Conda environment location is {config.CONDA_ENV_PREFIX_PATH}\n
+    Links to apps are placed in {config.CONDAX_LINK_DESTINATION}
+    """)
+)
 def cli():
     pass
 
 
 @cli.command(
-    help=f"""
+    help="""
     Install a package with condax.
 
     This will install a package into a new conda environment and link the executable
