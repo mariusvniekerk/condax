@@ -1,4 +1,5 @@
 import collections
+import logging
 import os
 import pathlib
 import shlex
@@ -67,10 +68,16 @@ def remove_links(package, executables_to_unlink):
     for exe in executables_to_unlink:
         executable_name = os.path.basename(exe)
         link_path = os.path.join(CONDAX_LINK_DESTINATION, executable_name)
-        package_wrapper = wrapper.read_env_name(link_path)
-        if package_wrapper == package:
+        wrapper_env = wrapper.read_env_name(link_path)
+        if wrapper_env is None:
+            print(f"    {executable_name} \t (failed to get env)")
+            os.unlink(link_path)
+        elif wrapper_env == package:
             print(f"    {executable_name}", file=sys.stderr)
             os.unlink(link_path)
+        else:
+            logging.info(f"Keep {executable_name} as it runs in {wrapper_env}, not {package}.")
+
 
 
 def install_package(package, channels=DEFAULT_CHANNELS):

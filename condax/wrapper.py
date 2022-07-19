@@ -16,6 +16,9 @@ def read_env_name(exec_path: str) -> Optional[str]:
     path = pathlib.Path(exec_path)
     exec_name = path.name
     if not path.exists():
+        logging.warning(f"File missing: `{path}`.")
+        return None
+    if path.is_symlink():
         return None
 
     with open(path) as f:
@@ -23,9 +26,10 @@ def read_env_name(exec_path: str) -> Optional[str]:
         namespace = p.parse(f.readlines())
 
     if namespace is None:
+        logging.warning(f"Failed to parse: `{exec_name}`.")
         return None
     elif namespace.exec_name != exec_name:
-        logging.warning(f"The wrapper `{path}` calls `{namespace.exec_name}`.")
+        logging.warning(f"The wrapper `{exec_name}` is inconsistent with the target `{namespace.exec_name}`.")
         return None
 
     return namespace.prefix.name
