@@ -19,3 +19,6 @@ _config.setdefault("channels", ["conda-forge", "defaults"])
 CONDA_ENV_PREFIX_PATH = os.path.expanduser(_config["prefix_path"])
 CONDAX_LINK_DESTINATION = os.path.expanduser(_config["link_destination"])
 DEFAULT_CHANNELS = _config["channels"]
+
+os.makedirs(CONDA_ENV_PREFIX_PATH, exist_ok=True)
+os.makedirs(CONDAX_LINK_DESTINATION, exist_ok=True)
