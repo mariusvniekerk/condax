@@ -2,6 +2,7 @@ import os
 
 import yaml
 
+# TODO: Respect $XDG_DATA_HOME and $XDG_CONFIG_HOME environment variables
 _condaxrc_path = os.path.expanduser(os.path.join("~", ".config", "condax", "config.yaml"))
 if os.path.exists(_condaxrc_path):
     with open(_condaxrc_path, "r") as fo:

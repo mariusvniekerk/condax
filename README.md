@@ -6,18 +6,17 @@
 Condax is inspired by the excellent [pipx](https://github.com/pipxproject/pipx), and attempts to do something similar, just using conda thus lifting the constraints of only packaging python things.
 
 
-## New features and differences since [`condax 0.0.5`](https://github.com/mariusvniekerk/condax/)
+## Features and differences since [`condax 0.0.5`](https://github.com/mariusvniekerk/condax/)
 
 - Supports `condax list` to display installed packages and executables.
 - Supports `condax inject` and `condax uninject` to add/remove a package to existing environment.
-- Use `mamba` internally if available.
-- Supports specifying version of a package, like `condax install ipython=8.3`.
+- Calls `mamba` internally if available.
+- Supports selecting version of a package, like `condax install ipython=8.3`.
     - See [package match specifications](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications) for the detail.
-- Works as a thin wrapper using `conda run` instead of symbolic links.
-    - The app installation directory is populated with scripts rather than symbolic links.
+- Adds command aliases:
+    - `condax uninstall` is an alias of `condax remove`.
+- Works as thin wrappers (bash scripts) calling `conda run` instead of symbolic links.
     - ➡️ Solves [the issue](https://github.com/mariusvniekerk/condax/issues/13) with non-Python packages
-- Overwrites an executable wrapper if already exists in the app directory.
-- Introduce `condax uninstall` as an alias of `condax remove`.
 - Follows [XDG Base Directory Specification](https://stackoverflow.com/questions/1024114/location-of-ini-config-files-in-linux-unix)
     - Environments are created in `~/.local/share/condax/envs` (previously `~/.condax`).
     - User config is loaded from `~/.config/condax/config.yaml` (previously `~/.condaxrc`) if exists.
