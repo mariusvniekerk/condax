@@ -1,25 +1,30 @@
 import os
+import pathlib
 
 import yaml
 
+
 # TODO: Respect $XDG_DATA_HOME and $XDG_CONFIG_HOME environment variables
-_condaxrc_path = os.path.expanduser(os.path.join("~", ".config", "condax", "config.yaml"))
-if os.path.exists(_condaxrc_path):
-    with open(_condaxrc_path, "r") as fo:
-        _config = yaml.safe_load(fo)
-else:
-    _config = {}
+CONDAX_CONFIG_PATH = pathlib.Path("~/.config/condax/config.yaml").expanduser()
+CONDAX_ENV_PREFIX_DIR = pathlib.Path("~/.local/share/condax/envs").expanduser()
+CONDAX_LINK_DESTINATION = pathlib.Path("~/.local/bin").expanduser()
 
-_config.setdefault("prefix_path", os.path.join("~", ".local", "share", "condax", "envs"))
-_config.setdefault(
-    "link_destination", os.path.expanduser(os.path.join("~", ".local", "bin"))
-)
-_config.setdefault("channels", ["conda-forge", "defaults"])
-
-
-CONDA_ENV_PREFIX_PATH = os.path.expanduser(_config["prefix_path"])
-CONDAX_LINK_DESTINATION = os.path.expanduser(_config["link_destination"])
-DEFAULT_CHANNELS = _config["channels"]
-
-os.makedirs(CONDA_ENV_PREFIX_PATH, exist_ok=True)
+os.makedirs(CONDAX_ENV_PREFIX_DIR, exist_ok=True)
 os.makedirs(CONDAX_LINK_DESTINATION, exist_ok=True)
+
+DEFAULT_CHANNELS = ["conda-forge", "defaults"]
+
+
+def set_defaults_if_absent(config_file: pathlib.Path) -> dict:
+    """
+    Load config file and set default values if they are not present.
+    """
+    if config_file.exists():
+        with open(config_file, "r") as f:
+            configs = yaml.safe_load(f)
+    else:
+        configs = dict()
+    configs.setdefault("prefix_path", CONDAX_ENV_PREFIX_DIR)
+    configs.setdefault("link_destination", CONDAX_LINK_DESTINATION)
+    configs.setdefault("channels", DEFAULT_CHANNELS)
+    return configs

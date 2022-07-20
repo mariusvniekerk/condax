@@ -8,7 +8,7 @@ import shutil
 import sys
 
 from . import conda
-from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION, DEFAULT_CHANNELS
+from .config import CONDAX_ENV_PREFIX_DIR, CONDAX_LINK_DESTINATION, DEFAULT_CHANNELS
 from .paths import mkpath
 from . import wrapper
 import condax.utils as utils
@@ -161,22 +161,22 @@ def remove_package(package):
 
 
 def update_all_packages():
-    for package in os.listdir(CONDA_ENV_PREFIX_PATH):
-        if os.path.isdir(os.path.join(CONDA_ENV_PREFIX_PATH, package)):
+    for package in os.listdir(CONDAX_ENV_PREFIX_DIR):
+        if os.path.isdir(os.path.join(CONDAX_ENV_PREFIX_DIR, package)):
             update_package(package)
 
 
 def list_all_packages(short=False):
     packages = []
-    for package in os.listdir(CONDA_ENV_PREFIX_PATH):
-        if os.path.isdir(os.path.join(CONDA_ENV_PREFIX_PATH, package)):
+    for package in os.listdir(CONDAX_ENV_PREFIX_DIR):
+        if os.path.isdir(os.path.join(CONDAX_ENV_PREFIX_DIR, package)):
             packages.append(package)
     packages.sort()
     executable_counts = collections.Counter()
 
     # messages follow pipx's text format
     if not short:
-        print(f"conda envs are in {CONDA_ENV_PREFIX_PATH}")
+        print(f"conda envs are in {CONDAX_ENV_PREFIX_DIR}")
         print(f"apps are exposed on your $PATH at {CONDAX_LINK_DESTINATION}")
 
     for package in packages:

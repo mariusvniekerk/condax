@@ -1,3 +1,4 @@
+import pathlib
 import sys
 import textwrap
 
@@ -6,15 +7,49 @@ import click
 from . import config, core, paths
 
 
-@click.group(
-    help=textwrap.dedent(f"""Install and execute applications packaged by conda.
-
-    Conda environment location is {config.CONDA_ENV_PREFIX_PATH}\n
-    Links to apps are placed in {config.CONDAX_LINK_DESTINATION}
-    """)
+option_channels = click.option(
+    "--channel",
+    "-c",
+    "channels",
+    multiple=True,
+    help=f"""Use the channels specified to install.  If not specified condax will
+    default to using {config.DEFAULT_CHANNELS}.""",
 )
-def cli():
-    pass
+
+option_envname = click.option(
+    "--name",
+    "-n",
+    "envname",
+    required=True,
+    prompt=True,
+    type=str,
+    help=f"""Specify existing environment to inject into.""",
+)
+
+
+@click.group(
+    chain=True,
+    help=textwrap.dedent(
+        f"""Install and execute applications packaged by conda.
+
+    Default varibles:
+
+      Conda environment location is {config.CONDAX_ENV_PREFIX_DIR}\n
+      Links to apps are placed in {config.CONDAX_LINK_DESTINATION}
+    """
+    ),
+)
+@click.option(
+    "--config",
+    "config_file",
+    type=pathlib.Path,
+    default=pathlib.Path(config.CONDAX_CONFIG_PATH),
+    help="Path to a YAML file containing configuration options.",
+)
+@click.pass_context
+def cli(ctx, config_file):
+    ctx.ensure_object(dict)  # don't forget this!
+    ctx.config = config.set_defaults_if_absent(config_file)
 
 
 @cli.command(
@@ -25,18 +60,12 @@ def cli():
     provided by it to `{config.CONDAX_LINK_DESTINATION}`.
     """
 )
-@click.option(
-    "--channel",
-    "-c",
-    multiple=True,
-    help=f"""Use the channels specified to install.  If not specified condax will
-    default to using {config.DEFAULT_CHANNELS}.""",
-)
+@option_channels
+@click.pass_context
 @click.argument("package")
-def install(channel, package):
-    if channel is None or (len(channel) == 0):
-        channel = config.DEFAULT_CHANNELS
-    core.install_package(package, channels=channel)
+def install(ctx, channels, package):
+    channels = channels if channels else ctx.config["channels"]
+    core.install_package(package, channels=channels)
 
 
 @cli.command(
@@ -47,8 +76,9 @@ def install(channel, package):
     conda environment.
     """
 )
+@click.pass_context
 @click.argument("package")
-def remove(package):
+def remove(ctx, package):
     core.remove_package(package)
 
 
@@ -57,8 +87,9 @@ def remove(package):
     Alias for conda remove.
     """
 )
+@click.pass_context
 @click.argument("package")
-def uninstall(package):
+def uninstall(ctx, package):
     core.remove_package(package)
 
 
@@ -75,33 +106,24 @@ def uninstall(package):
     default=False,
     help="List packages only.",
 )
-def list(short):
+@click.pass_context
+def list(ctx, short):
+    print(f'{ctx.config = }')
     core.list_all_packages(short)
+
 
 @cli.command(
     help="""
     Inject a package to existing environment created by condax.
     """
 )
-@click.option(
-    "--channel",
-    "-c",
-    multiple=True,
-    help=f"""Use the channels specified to install.  If not specified condax will
-    default to using {config.DEFAULT_CHANNELS}.""",
-)
-@click.option(
-    "--name",
-    "-n",
-    required=True,
-    type=str,
-    help=f"""Specify existing environment to inject into.""",
-)
+@option_channels
+@option_envname
+@click.pass_context
 @click.argument("package")
-def inject(package, name, channel):
-    if channel is None or (len(channel) == 0):
-        channel = config.DEFAULT_CHANNELS
-    core.inject_package_to_env(name, package, channels=channel)
+def inject(ctx, package, envname, channels):
+    channels = channels if channels else ctx.config['channels']
+    core.inject_package_to_env(envname, package, channels=channels)
 
 
 @cli.command(
@@ -109,16 +131,11 @@ def inject(package, name, channel):
     Uninject a package from existing environment managed by condax.
     """
 )
-@click.option(
-    "--name",
-    "-n",
-    required=True,
-    type=str,
-    help=f"""Specify existing environment from which uninject a package""",
-)
+@option_envname
+@click.pass_context
 @click.argument("package")
-def unject(package, name):
-    core.uninject_package_from_env(name, package)
+def unject(ctx, package, envname):
+    core.uninject_package_from_env(envname, package)
 
 
 @cli.command(
@@ -153,4 +170,4 @@ def update(ctx, all, package):
 
 
 if __name__ == "__main__":
-    cli()
+    cli(config={})
