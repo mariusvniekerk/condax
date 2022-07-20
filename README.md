@@ -18,8 +18,8 @@ Condax is inspired by the excellent [pipx](https://github.com/pipxproject/pipx),
     - ➡️ Solves [the issue](https://github.com/mariusvniekerk/condax/issues/13) with non-Python packages
 - Overwrites an executable wrapper if already exists in the app directory.
 - Introduce `condax uninstall` as an alias of `condax remove`.
-- Conda environments are created in `~/.local/condax/envs` (previously `~/.condax`)
-- Condax config is read from `~/.local/condax/config.yaml` (previously `~/.condaxrc`)
+- Environments are created in `~/.local/share/condax/envs` (previously `~/.condax`)
+- Condax config is read from `~/.config/condax/config.yaml` (previously `~/.condaxrc`)
 - Minor bugfixes
 
 
@@ -41,14 +41,14 @@ This forked version has changed the default locations of the configs and environ
 
 ```bash
 # Move environments to new location
-mkdir -p ~/.local/condax/envs
-mv ~/.condax/* ~/.local/condax/envs
+mkdir -p ~/.local/share/condax/envs
+mv ~/.condax/* ~/.local/share/condax/envs
 
 # If .condaxrc exists, rename to config.yaml and move to new location
-[[ -f ~/.condaxrc ]] && mv ~/.condaxrc ~/.local/condax/config.yaml
+[[ -f ~/.condaxrc ]] && mkdir -p ~/.config/condax && mv ~/.condaxrc ~/.config/condax/config.yaml
 
 # Fix conda's list of environments
-sed -i 's|.condax|.local/condax/envs|g' ~/.conda/environments.txt
+sed -i 's|.condax|.local/share/condax/envs|g' ~/.conda/environments.txt
 
 # [TODO] implement `condax reinstall-all` to fix links
 ```
