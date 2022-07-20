@@ -6,7 +6,7 @@
 Condax is inspired by the excellent [pipx](https://github.com/pipxproject/pipx), and attempts to do something similar, just using conda thus lifting the constraints of only packaging python things.
 
 
-## Difference from the original [`condax v0.0.5`](https://github.com/mariusvniekerk/condax/)
+## New features and differences since [`condax 0.0.5`](https://github.com/mariusvniekerk/condax/)
 
 - Supports `condax list` to display installed packages and executables.
 - Supports `condax inject` and `condax uninject` to add/remove a package to existing environment.
@@ -18,20 +18,37 @@ Condax is inspired by the excellent [pipx](https://github.com/pipxproject/pipx),
     - ➡️ Solves [the issue](https://github.com/mariusvniekerk/condax/issues/13) with non-Python packages
 - Overwrites an executable wrapper if already exists in the app directory.
 - Introduce `condax uninstall` as an alias of `condax remove`.
+- Conda environments are created in `~/.local/condax/envs` (previously `~/.condax`)
+- Condax config is read from `~/.local/condax/config.yaml` (previously `~/.condaxrc`)
 - Minor bugfixes
 
-## Installation
+
+## Install this forked version
 
 Use `pipx` or `pip` to install from this repository.
 
 ```
-# If you prefer pip, run this instead.
-# pip install git+https://github.com/yamaton/condax
-
 $ pipx install git+https://github.com/yamaton/condax
+
+# or run: pip install git+https://github.com/yamaton/condax
 ```
 
-## License
+## Transfer condax environments from v0.0.5
 
-condax is distributed under the terms of the
-[MIT License](https://choosealicense.com/licenses/mit).
+**This instruction does not work.** Will update.
+
+This forked version has changed the default locations of the configs and environments. If you need to keep them from the original program, please run following to transfer to the new locations.
+
+```bash
+# Move environments to new location
+mkdir -p ~/.local/condax/envs
+mv ~/.condax/* ~/.local/condax/envs
+
+# If .condaxrc exists, rename to config.yaml and move to new location
+[[ -f ~/.condaxrc ]] && mv ~/.condaxrc ~/.local/condax/config.yaml
+
+# Fix conda's list of environments
+sed -i 's|.condax|.local/condax/envs|g' ~/.conda/environments.txt
+
+# [TODO] implement `condax reinstall-all` to fix links
+```
