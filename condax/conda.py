@@ -3,6 +3,7 @@ import logging
 import os
 import pathlib
 import platform
+import shlex
 import shutil
 import stat
 import subprocess
@@ -83,7 +84,7 @@ def create_conda_environment(package: str, match_specs=""):
             *channels_args,
             "--quiet",
             "--yes",
-            package + match_specs,
+            shlex.quote(package + match_specs),
         ]
     )
 
@@ -106,7 +107,7 @@ def inject_to_conda_env(package: str, env_name: str, match_specs=""):
             *channels_args,
             "--quiet",
             "--yes",
-            package + match_specs,
+            shlex.quote(package + match_specs),
         ]
     )
 
