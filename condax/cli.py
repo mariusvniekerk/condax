@@ -33,6 +33,15 @@ option_envname = click.option(
     help=f"""Specify existing environment to inject into.""",
 )
 
+option_is_forcing = click.option(
+    "-f",
+    "--force",
+    "is_forcing",
+    help="""Modify existing environment and files in CONDAX_BIN_DIR.""",
+    is_flag=True,
+    default=False,
+)
+
 
 @click.group(
     help=f"""Install and execute applications packaged by conda.
@@ -61,12 +70,13 @@ def cli(config_file):
 )
 @option_channels
 @option_config
+@option_is_forcing
 @click.argument("package")
-def install(package, channels, config_file):
+def install(package, channels, config_file, is_forcing):
     if config_file:
         config.set_via_file(config_file)
     channels = channels if channels else C.channels()
-    core.install_package(package, channels)
+    core.install_package(package, channels, is_forcing=is_forcing)
 
 
 @cli.command(
@@ -116,10 +126,11 @@ def list(short):
 )
 @option_channels
 @option_envname
+@option_is_forcing
 @click.argument("package")
-def inject(package, envname, channels):
+def inject(package, envname, channels, is_forcing):
     channels = channels if channels else C.channels()
-    core.inject_package_to_env(envname, package, channels=channels)
+    core.inject_package_to_env(envname, package, channels=channels, is_forcing=is_forcing)
 
 
 @cli.command(

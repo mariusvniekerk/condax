@@ -17,6 +17,7 @@ from .paths import mkpath
 
 Path = pathlib.Path
 
+
 def ensure_conda(mamba_ok=True):
     execs = ["conda", "conda.exe"]
     if mamba_ok:
@@ -52,11 +53,9 @@ def install_conda_exe():
     return target_filename
 
 
-def ensure_dest_prefix():
-    C.prefix_dir().mkdir(exist_ok=True)
-
-
-def write_condarc_to_prefix(prefix: Path, channels: str, channel_priority: str="strict"):
+def write_condarc_to_prefix(
+    prefix: Path, channels: str, channel_priority: str = "strict"
+):
     """Create a condarc with the channel priority used for installing the given tool.
 
     Earlier channels have higher priority"""
@@ -69,7 +68,7 @@ def write_condarc_to_prefix(prefix: Path, channels: str, channel_priority: str="
         fo.write("\n")
 
 
-def create_conda_environment(package, channels=C.channels(), match_specs=""):
+def create_conda_environment(package: str, channels=C.channels(), match_specs=""):
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(package)
 
@@ -94,7 +93,7 @@ def create_conda_environment(package, channels=C.channels(), match_specs=""):
     write_condarc_to_prefix(prefix, channels)
 
 
-def inject_to_conda_env(package, env_name, channels=C.channels(), match_specs=""):
+def inject_to_conda_env(package: str, env_name: str, channels=C.channels(), match_specs=""):
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
     channels_args = [x for c in channels for x in ["--channel", c]]
@@ -114,7 +113,7 @@ def inject_to_conda_env(package, env_name, channels=C.channels(), match_specs=""
     )
 
 
-def uninject_from_conda_env(package, env_name):
+def uninject_from_conda_env(package: str, env_name: str):
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
 
@@ -131,7 +130,7 @@ def uninject_from_conda_env(package, env_name):
     )
 
 
-def remove_conda_env(package):
+def remove_conda_env(package: str):
     conda_exe = ensure_conda()
 
     subprocess.check_call(
@@ -139,7 +138,7 @@ def remove_conda_env(package):
     )
 
 
-def update_conda_env(package):
+def update_conda_env(package: str):
     conda_exe = ensure_conda()
 
     subprocess.check_call(

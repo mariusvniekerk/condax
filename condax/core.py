@@ -41,7 +41,7 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
     else:
         script_path = C.bin_dir() / executable_name
         if script_path.exists() and not is_forcing:
-            user_input = input("f{executable_name} already exists. Overwrite? (y/N)")
+            user_input = input(f"{executable_name} already exists. Overwrite? (y/N) ")
             if user_input.strip().lower() not in ("y", "yes"):
                 print(f"Skip installing app: {executable_name}...")
                 return
@@ -58,14 +58,14 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
         shutil.copystat(exe, script_path)
 
 
-def create_links(package: str, executables_to_link: Iterable[Path]):
+def create_links(package: str, executables_to_link: Iterable[Path], is_forcing: bool=False):
     if executables_to_link:
         print("Created the following entrypoint links:", file=sys.stderr)
 
     for exe in sorted(executables_to_link):
         executable_name = exe.name
         print(f"    {executable_name}", file=sys.stderr)
-        create_link(package, exe)
+        create_link(package, exe, is_forcing)
 
 
 def remove_links(package: str, executables_to_unlink: Iterable[Path]):
@@ -88,22 +88,25 @@ def remove_links(package: str, executables_to_unlink: Iterable[Path]):
             )
 
 
-def install_package(package: str, channels: List[str] = C.channels()):
+def install_package(package: str, channels: List[str] = C.channels(), is_forcing: bool=False):
     # package match specifications
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
     package, match_specs = utils.split_match_specs(package)
 
     if conda.has_conda_env(package):
-        print(
-            f"`{package}` is already installed. Run `condax update {package}` to update.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
+        if is_forcing:
+            conda.remove_conda_env(package)
+        else:
+            print(
+                f"`{package}` is already installed. Run `condax update {package}` to update.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
     conda.create_conda_environment(package, channels=channels, match_specs=match_specs)
     executables_to_link = conda.determine_executables_from_env(package)
     mkpath(C.bin_dir())
-    create_links(package, executables_to_link)
+    create_links(package, executables_to_link, is_forcing=is_forcing)
     print(f"`{package}` has been installed by condax", file=sys.stderr)
 
 
@@ -112,6 +115,7 @@ def inject_package_to_env(
     injected_package: str,
     channels: List[str] = C.channels(),
     match_specs: str = "",
+    is_forcing: bool = False,
 ):
     if not conda.has_conda_env(env_name):
         print(
@@ -124,14 +128,14 @@ def inject_package_to_env(
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
     injected_package, match_specs = utils.split_match_specs(injected_package)
     conda.inject_to_conda_env(
-        injected_package, env_name, channels=channels, match_specs=match_specs
+        injected_package, env_name, channels=channels, match_specs=match_specs,
     )
     # TODO: add scripts only if --include-apps
     if False:
         executables_to_link = conda.determine_executables_from_env(
-            env_name, injected_package
+            env_name, injected_package,
         )
-        create_links(env_name, executables_to_link)
+        create_links(env_name, executables_to_link, is_forcing=is_forcing)
     print(f"`{injected_package}` has been injected to `{env_name}`", file=sys.stderr)
 
 
@@ -171,10 +175,10 @@ def remove_package(package):
     print(f"`{package}` has been removed from condax", file=sys.stderr)
 
 
-def update_all_packages():
+def update_all_packages(is_forcing: bool=False):
     for package_dir in C.prefix_dir().iterdir():
         package = package_dir.name
-        update_package(package)
+        update_package(package, is_forcing=is_forcing)
 
 
 def list_all_packages(short=False):
@@ -224,7 +228,7 @@ def list_all_packages(short=False):
         print()
 
 
-def update_package(package: str):
+def update_package(package: str, is_forcing: bool=False):
     exit_if_not_installed(package)
     try:
         executables_already_linked = set(conda.determine_executables_from_env(package))
@@ -236,7 +240,7 @@ def update_package(package: str):
         to_create = executables_linked_in_updated - executables_already_linked
         to_delete = executables_already_linked - executables_linked_in_updated
 
-        create_links(package, to_create)
+        create_links(package, to_create, is_forcing)
         remove_links(package, to_delete)
         print(f"{package} update successfully")
 
@@ -245,4 +249,4 @@ def update_package(package: str):
         print(f"removing and recreating instead", file=sys.stderr)
 
         remove_package(package)
-        install_package(package)
+        install_package(package, is_forcing=is_forcing)
