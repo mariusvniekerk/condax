@@ -9,7 +9,7 @@ Path = pathlib.Path
 
 def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
     """
-    Read the wrapper containing 'conda run'.
+    Read a condax wrapper script.
 
     Returns the environment name within which conda run is executed.
     """
@@ -22,8 +22,7 @@ def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
         return None
 
     with open(path) as f:
-        p = Parser()
-        namespace = p.parse(f.readlines())
+        namespace = Parser.parse(f.readlines())
 
     if namespace is None:
         logging.warning(f"Failed to parse: `{exec_name}`.")
@@ -36,23 +35,26 @@ def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
 
 
 class Parser(object):
-    def __init__(self):
-        p = argparse.ArgumentParser()
-        p_run = p.add_subparsers().add_parser("run")
-        p_run.add_argument("--prefix", type=pathlib.Path)
-        p_run.add_argument("exec_name")
-        p_run.add_argument("args")
-        self.p = p
+    """
+    Parser.parse(lines) parses lines to get 'conda run' information.
+    """
+    p = argparse.ArgumentParser()
+    p_run = p.add_subparsers().add_parser("run")
+    p_run.add_argument("--prefix", type=pathlib.Path)
+    p_run.add_argument("exec_name")
+    p_run.add_argument("args")
 
-    def _parse_args(self, args: List[str]) -> Optional[argparse.Namespace]:
+    @classmethod
+    def _parse_args(cls, args: List[str]) -> Optional[argparse.Namespace]:
         result = None
         try:
-            result = self.p.parse_args(args)
+            result = cls.p.parse_args(args)
         except AssertionError:
             pass
         return result
 
-    def _parse_line(self, line: str) -> Optional[argparse.Namespace]:
+    @classmethod
+    def _parse_line(cls, line: str) -> Optional[argparse.Namespace]:
         """
         Extract the first line executing conda/mamba run
         """
@@ -66,11 +68,12 @@ class Parser(object):
             return None
 
         args = words[1:]
-        return self._parse_args(args)
+        return cls._parse_args(args)
 
-    def parse(self, lines: List[str]) -> Optional[argparse.Namespace]:
+    @classmethod
+    def parse(cls, lines: List[str]) -> Optional[argparse.Namespace]:
         for line in lines:
-            result = self._parse_line(line)
+            result = cls._parse_line(line)
             if result is not None:
                 return result
         return None
