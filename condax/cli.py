@@ -7,13 +7,21 @@ import click
 from . import config, core, paths
 from condax.config import C
 
+
+option_config = click.option(
+    "--config",
+    "config_file",
+    type=pathlib.Path,
+    help=f"Custom path to a condax config file in YAML. Default: {config.DEFAULT_CONFIG}",
+)
+
 option_channels = click.option(
     "--channel",
     "-c",
     "channels",
     multiple=True,
-    help=f"""Use the channels specified to install.  If not specified condax will
-    default to using {config.DEFAULT_CHANNELS}.""",
+    help=f"""Use the channels specified to install. If not specified condax will
+    default to using {config.DEFAULT_CHANNELS}, or 'channels' in the config file.""",
 )
 
 option_envname = click.option(
@@ -39,17 +47,12 @@ option_envname = click.option(
     """
     ),
 )
-@click.option(
-    "--config",
-    "config_file",
-    type=pathlib.Path,
-    help="Path to a YAML file containing configuration options.",
-)
+@option_config
 def cli(config_file):
     if config_file:
         config.set_via_file(config_file)
     else:
-        # only at the root level
+        # Run once at the top-level cli() to load defaults
         config.set_via_file()
 
 
@@ -62,8 +65,11 @@ def cli(config_file):
     """
 )
 @option_channels
+@option_config
 @click.argument("package")
-def install(package, channels):
+def install(package, channels, config_file):
+    if config_file:
+        config.set_via_file(config_file)
     channels = channels if channels else C.channels()
     core.install_package(package, channels)
 
@@ -135,10 +141,12 @@ def unject(package, envname):
 @cli.command(
     help="""
     Ensure the condax links directory is on $PATH.
-
-    This can update shell configuration files like `~/.bashrc`."""
+    """
 )
-def ensure_path():
+@option_config
+def ensure_path(config_file):
+    if config_file:
+        config.set_via_file(config_file)
     paths.add_path_to_environment(config.DEFAULT_BIN_DIR)
 
 
@@ -147,7 +155,7 @@ def ensure_path():
     Update package(s) installed by condax.
 
     This will update the underlying conda environments(s) to the latest release of a package.
-"""
+    """
 )
 @click.option(
     "--all", is_flag=True, help="Set to update all packages installed by condax"

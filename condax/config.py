@@ -75,7 +75,7 @@ def set_via_value(
     bin_dir: Optional[Path] = None,
     channels: List[str] = []):  # type: ignore
     """
-    Set default values via arguments.
+    Set default values via items.
     """
     if prefix_dir:
         C._set("prefix_dir", prefix_dir)
