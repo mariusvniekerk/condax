@@ -22,7 +22,7 @@ def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
         return None
 
     with open(path) as f:
-        namespace = Parser.parse(f.readlines())
+        namespace = Parser.parse(f.read())
 
     if namespace is None:
         logging.warning(f"Failed to parse: `{exec_name}`.")
@@ -41,18 +41,16 @@ class Parser(object):
     """
 
     p = argparse.ArgumentParser()
-    p_run = p.add_subparsers().add_parser("run")
-    p_run.add_argument("--prefix", type=pathlib.Path)
-    p_run.add_argument("exec_name")
-    p_run.add_argument("args")
+    p.add_argument("--prefix", type=pathlib.Path)
+    p.add_argument("exec_name")
+    p.add_argument("args")
 
     @classmethod
     def _parse_args(cls, args: List[str]) -> Optional[argparse.Namespace]:
-        result = None
         try:
             result = cls.p.parse_args(args)
         except AssertionError:
-            pass
+            result = None
         return result
 
     @classmethod
@@ -69,11 +67,15 @@ class Parser(object):
         if cmd not in ("conda", "mamba"):
             return None
 
-        args = words[1:]
+        if words[1] != "run":
+            return None
+
+        args = words[2:]
         return cls._parse_args(args)
 
     @classmethod
-    def parse(cls, lines: List[str]) -> Optional[argparse.Namespace]:
+    def parse(cls, text: str) -> Optional[argparse.Namespace]:
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
         for line in lines:
             result = cls._parse_line(line)
             if result is not None:
