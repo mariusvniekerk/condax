@@ -48,7 +48,7 @@ class C:
             raise NameError("Name not accepted in set() method")
 
 
-def set_via_file(config_file: Union[str, Path]=DEFAULT_CONFIG):
+def set_via_file(config_file: Union[str, Path]):
     """
     Load config file and set default values if they are not present.
     """
@@ -85,3 +85,4 @@ def set_via_value(
 
     if channels:
         C._set("channels", channels)
+

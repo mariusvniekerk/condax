@@ -36,7 +36,6 @@ option_envname = click.option(
 
 
 @click.group(
-    chain=True,
     help=textwrap.dedent(
         f"""Install and execute applications packaged by conda.
 
@@ -52,9 +51,7 @@ def cli(config_file):
     if config_file:
         config.set_via_file(config_file)
     else:
-        # Run once at the top-level cli() to load defaults
-        config.set_via_file()
-
+        config.set_via_file(config.DEFAULT_CONFIG)
 
 @cli.command(
     help=f"""
