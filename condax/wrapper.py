@@ -2,10 +2,12 @@ import argparse
 import pathlib
 import shlex
 import logging
-from typing import Optional, List
+from typing import Optional, List, Union
+
+Path = pathlib.Path
 
 
-def read_env_name(exec_path: str) -> Optional[str]:
+def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
     """
     Read the wrapper containing 'conda run'.
 

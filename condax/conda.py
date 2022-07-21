@@ -2,16 +2,20 @@ import glob
 import json
 import logging
 import os
+import pathlib
 import platform
 import shutil
 import stat
 import subprocess
+from typing import List, Optional, Tuple, Union
 
 import requests
 
 from condax.config import C
 from .paths import mkpath
 
+
+Path = pathlib.Path
 
 def ensure_conda(mamba_ok=True):
     execs = ["conda", "conda.exe"]
@@ -40,9 +44,7 @@ def install_conda_exe():
     resp = requests.get(f"{conda_exe_prefix}/{conda_exe_file}", allow_redirects=True)
     resp.raise_for_status()
     mkpath(C.bin_dir())
-    target_filename = os.path.expanduser(
-        os.path.join(C.bin_dir(), "conda.exe")
-    )
+    target_filename = (C.bin_dir() / "conda.exe").expanduser()
     with open(target_filename, "wb") as fo:
         fo.write(resp.content)
     st = os.stat(target_filename)
@@ -51,15 +53,14 @@ def install_conda_exe():
 
 
 def ensure_dest_prefix():
-    if not os.path.exists(C.prefix_dir()):
-        os.mkdir(C.prefix_dir())
+    C.prefix_dir().mkdir(exist_ok=True)
 
 
-def write_condarc_to_prefix(prefix, channels, channel_priority="strict"):
+def write_condarc_to_prefix(prefix: Path, channels: str, channel_priority: str="strict"):
     """Create a condarc with the channel priority used for installing the given tool.
 
     Earlier channels have higher priority"""
-    with open(os.path.join(prefix, "condarc"), "w") as fo:
+    with open(prefix / "condarc", "w") as fo:
         fo.write(f"channel_priority: {channel_priority}\n")
         if channels:
             fo.write("channels:\n")
@@ -147,25 +148,25 @@ def update_conda_env(package):
 
 
 def has_conda_env(package: str) -> bool:
-    return os.path.exists(conda_env_prefix(package))
+    return conda_env_prefix(package).exists()
 
 
-def conda_env_prefix(package):
-    return os.path.join(C.prefix_dir(), package)
+def conda_env_prefix(package: str) -> Path:
+    return C.prefix_dir() / package
 
 
-def get_package_info(package, specific_name=None):
+def get_package_info(package, specific_name=None) -> Tuple[str, str, str]:
     env_prefix = conda_env_prefix(package)
     package_name = package if specific_name is None else specific_name
-    glob_pattern = os.path.join(env_prefix, "conda-meta", f"{package_name}*.json")
+    conda_meta_dir = env_prefix / "conda-meta"
     try:
-        for file_name in glob.glob(glob_pattern):
+        for file_name in conda_meta_dir.glob(f"{package_name}*.json"):
             with open(file_name, "r") as fo:
                 package_info = json.load(fo)
                 if package_info["name"] == package_name:
-                    name = package_info["name"]
-                    version = package_info["version"]
-                    build = package_info["build"]
+                    name: str = package_info["name"]
+                    version: str = package_info["version"]
+                    build: str = package_info["build"]
                     return (name, version, build)
     except ValueError:
         logging.info(
@@ -177,19 +178,19 @@ def get_package_info(package, specific_name=None):
             )
         )
 
-    return (None, None, None)
+    return ("", "", "")
 
 
-def determine_executables_from_env(package, injected_package=None):
-    def is_good(p):
-        parname = os.path.basename(os.path.dirname(p))
-        return parname in ("bin", "sbin", "scripts", "Scripts")
+def determine_executables_from_env(package: str, injected_package: Optional[str] = None) -> List[Path]:
+    def is_good(p: Union[str, Path]) -> bool:
+        p = Path(p)
+        return p.parent.name in ("bin", "sbin", "scripts", "Scripts")
 
     env_prefix = conda_env_prefix(package)
     target_name = injected_package if injected_package else package
 
-    glob_pattern = os.path.join(env_prefix, "conda-meta", f"{target_name}*.json")
-    for file_name in glob.glob(glob_pattern):
+    conda_meta_dir = env_prefix / "conda-meta"
+    for file_name in conda_meta_dir.glob(f"{target_name}*.json"):
         with open(file_name, "r") as fo:
             package_info = json.load(fo)
             if package_info["name"] == target_name:
@@ -208,7 +209,7 @@ def determine_executables_from_env(package, injected_package=None):
     pathext = os.environ.get("PATHEXT", "").split(";")
     executables = set()
     for fn in potential_executables:
-        abs_executable_path = f"{env_prefix}/{fn}"
+        abs_executable_path = env_prefix / fn
         # unix
         if os.access(abs_executable_path, os.X_OK):
             executables.add(abs_executable_path)

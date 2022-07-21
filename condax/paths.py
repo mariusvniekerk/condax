@@ -1,11 +1,14 @@
 import os
+import pathlib
 import sys
+from typing import Union
 
 import userpath
 
+Path = pathlib.Path
 
-def mkpath(path):
-    os.makedirs(path, exist_ok=True)
+def mkpath(path: Union[Path, str]):
+    Path(path).mkdir(exist_ok=True)
 
 
 def add_path_to_environment(path):

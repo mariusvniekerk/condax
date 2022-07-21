@@ -6,6 +6,7 @@ import shlex
 import subprocess
 import shutil
 import sys
+from typing import Iterable, List
 
 from . import conda
 from condax.config import C
@@ -14,8 +15,11 @@ from . import wrapper
 import condax.utils as utils
 
 
-def create_link(package, exe):
-    executable_name = os.path.basename(exe)
+Path = pathlib.Path
+
+
+def create_link(package: str, exe: Path):
+    executable_name = exe.name
     # TODO: enable `mamba run` option after hiding the banner
     conda_exe = conda.ensure_conda(mamba_ok=False)
     prefix = conda.conda_env_prefix(package)
@@ -23,8 +27,8 @@ def create_link(package, exe):
         # create a batch file to run our application
         win_path = pathlib.PureWindowsPath(exe)
         name_only, _ = os.path.splitext(executable_name)
-        script_path = os.path.join(C.bin_dir(), f"{name_only}.bat")
-        if os.path.exists(script_path):
+        script_path = C.bin_dir() / f"{name_only}.bat"
+        if script_path.exists():
             print(f"[warning] {name_only}.bat already exists; overwriting it...")
         with open(script_path, "w") as fo:
             fo.writelines(
@@ -35,9 +39,9 @@ def create_link(package, exe):
                 ]
             )
     else:
-        script_path = os.path.join(C.bin_dir(), executable_name)
-        if os.path.exists(script_path):
-            name = os.path.basename(script_path)
+        script_path = C.bin_dir() / executable_name
+        if script_path.exists():
+            name = script_path.name
             print(f"[warning] {name} already exists; overwriting it...")
         with open(script_path, "w") as fo:
             fo.writelines(
@@ -51,36 +55,37 @@ def create_link(package, exe):
         shutil.copystat(exe, script_path)
 
 
-def create_links(package, executables_to_link):
+def create_links(package: str, executables_to_link: Iterable[Path]):
     if executables_to_link:
         print("Created the following entrypoint links:", file=sys.stderr)
 
-    for exe in executables_to_link:
-        executable_name = os.path.basename(exe)
+    for exe in sorted(executables_to_link):
+        executable_name = exe.name
         print(f"    {executable_name}", file=sys.stderr)
         create_link(package, exe)
 
 
-def remove_links(package, executables_to_unlink):
+def remove_links(package: str, executables_to_unlink: Iterable[Path]):
     if executables_to_unlink:
         print("Removed the following entrypoint links:", file=sys.stderr)
 
     for exe in executables_to_unlink:
-        executable_name = os.path.basename(exe)
-        link_path = os.path.join(C.bin_dir(), executable_name)
+        executable_name = exe.name
+        link_path = C.bin_dir() / executable_name
         wrapper_env = wrapper.read_env_name(link_path)
         if wrapper_env is None:
             print(f"    {executable_name} \t (failed to get env)")
-            os.unlink(link_path)
+            link_path.unlink()
         elif wrapper_env == package:
             print(f"    {executable_name}", file=sys.stderr)
-            os.unlink(link_path)
+            link_path.unlink()
         else:
-            logging.info(f"Keep {executable_name} as it runs in {wrapper_env}, not {package}.")
+            logging.info(
+                f"Keep {executable_name} as it runs in {wrapper_env}, not {package}."
+            )
 
 
-
-def install_package(package, channels=C.channels()):
+def install_package(package: str, channels: List[str] = C.channels()):
     # package match specifications
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
     package, match_specs = utils.split_match_specs(package)
@@ -100,7 +105,10 @@ def install_package(package, channels=C.channels()):
 
 
 def inject_package_to_env(
-    env_name, injected_package, channels=C.channels(), match_specs=""
+    env_name: str,
+    injected_package: str,
+    channels: List[str] = C.channels(),
+    match_specs: str = "",
 ):
     if not conda.has_conda_env(env_name):
         print(
@@ -144,9 +152,9 @@ def uninject_package_from_env(env_name, injected_package):
     )
 
 
-def exit_if_not_installed(package):
+def exit_if_not_installed(package: str):
     prefix = conda.conda_env_prefix(package)
-    if not os.path.exists(prefix):
+    if not prefix.exists():
         print(f"`{package}` is not installed with condax", file=sys.stderr)
         sys.exit(0)
 
@@ -161,16 +169,13 @@ def remove_package(package):
 
 
 def update_all_packages():
-    for package in os.listdir(C.prefix_dir()):
-        if os.path.isdir(os.path.join(C.prefix_dir(), package)):
-            update_package(package)
+    for package_dir in C.prefix_dir().iterdir():
+        package = package_dir.name
+        update_package(package)
 
 
 def list_all_packages(short=False):
-    packages = []
-    for package in os.listdir(C.prefix_dir()):
-        if os.path.isdir(os.path.join(C.prefix_dir(), package)):
-            packages.append(package)
+    packages = [pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()]
     packages.sort()
     executable_counts = collections.Counter()
 
@@ -199,7 +204,7 @@ def list_all_packages(short=False):
 
             try:
                 paths = conda.determine_executables_from_env(package)
-                names = [os.path.basename(path) for path in paths]
+                names = [path.name for path in paths]
                 executable_counts.update(names)
                 for name in sorted(names):
                     print(f"    - {name}")
@@ -216,7 +221,7 @@ def list_all_packages(short=False):
         print()
 
 
-def update_package(package):
+def update_package(package: str):
     exit_if_not_installed(package)
     try:
         executables_already_linked = set(conda.determine_executables_from_env(package))
