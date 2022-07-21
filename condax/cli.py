@@ -5,6 +5,7 @@ import textwrap
 import click
 
 from . import config, core, paths
+from condax.config import C
 
 option_channels = click.option(
     "--channel",
@@ -50,7 +51,7 @@ def cli(config_file):
 
 
 @cli.command(
-    help="""
+    help=f"""
     Install a package with condax.
 
     This will install a package into a new conda environment and link the executable
@@ -60,7 +61,7 @@ def cli(config_file):
 @option_channels
 @click.argument("package")
 def install(package, channels):
-    channels = channels if channels else config.DEFAULT_CHANNELS
+    channels = channels if channels else C.channels()
     core.install_package(package, channels)
 
 
@@ -113,7 +114,7 @@ def list(short):
 @option_envname
 @click.argument("package")
 def inject(package, envname, channels):
-    channels = channels if channels else config.DEFAULT_CHANNELS
+    channels = channels if channels else C.channels()
     core.inject_package_to_env(envname, package, channels=channels)
 
 

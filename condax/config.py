@@ -7,29 +7,38 @@ import yaml
 
 Path = pathlib.Path
 
-# TODO: Respect $XDG_DATA_HOME and $XDG_CONFIG_HOME environment variables
-DEFAULT_CONFIG = os.environ.get("DEFAULT_CONFIG", "~/.config/condax/config.yaml")
+XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME", "~/.config")
+DEFAULT_CONFIG = os.environ.get("CONDAX_CONFIG", os.path.join(XDG_CONFIG_HOME, "condax/config.yaml"))
 
+XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME", "~/.local/share")
 DEFAULT_PREFIX_DIR = Path(
-    os.environ.get("DEFAULT_PREFIX_DIR", "~/.local/share/condax/envs")
+    os.environ.get("CONDAX_PREFIX_DIR", os.path.join(XDG_DATA_HOME, "condax/envs"))
 ).expanduser()
 DEFAULT_BIN_DIR = Path(
-    os.environ.get("DEFAULT_BIN_DIR", "~/.local/bin")
+    os.environ.get("CONDAX_BIN_DIR", "~/.local/bin")
 ).expanduser()
 DEFAULT_CHANNELS = ["conda-forge", "defaults"]
 
 
 # https://stackoverflow.com/questions/6198372/most-pythonic-way-to-provide-global-configuration-variables-in-config-py
-class C(object):
-    __conf = dict(
-        prefix_dir = DEFAULT_PREFIX_DIR,
-        bin_dir = DEFAULT_BIN_DIR,
-        channels = DEFAULT_CHANNELS,
-    )
+class C:
+    __conf = {
+        "prefix_dir": DEFAULT_PREFIX_DIR,
+        "bin_dir": DEFAULT_BIN_DIR,
+        "channels": DEFAULT_CHANNELS,
+    }
 
     @staticmethod
-    def config(name):
-        return C.__conf[name]
+    def prefix_dir() -> Path:
+        return C.__conf["prefix_dir"]
+
+    @staticmethod
+    def bin_dir() -> Path:
+        return C.__conf["bin_dir"]
+
+    @staticmethod
+    def channels() -> List[str]:
+        return C.__conf["channels"]
 
     @staticmethod
     def _set(name: str, value):

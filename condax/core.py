@@ -8,7 +8,7 @@ import shutil
 import sys
 
 from . import conda
-from .config import DEFAULT_PREFIX_DIR, DEFAULT_BIN_DIR, DEFAULT_CHANNELS
+from condax.config import C
 from .paths import mkpath
 from . import wrapper
 import condax.utils as utils
@@ -23,7 +23,7 @@ def create_link(package, exe):
         # create a batch file to run our application
         win_path = pathlib.PureWindowsPath(exe)
         name_only, _ = os.path.splitext(executable_name)
-        script_path = os.path.join(DEFAULT_BIN_DIR, f"{name_only}.bat")
+        script_path = os.path.join(C.bin_dir(), f"{name_only}.bat")
         if os.path.exists(script_path):
             print(f"[warning] {name_only}.bat already exists; overwriting it...")
         with open(script_path, "w") as fo:
@@ -35,7 +35,7 @@ def create_link(package, exe):
                 ]
             )
     else:
-        script_path = os.path.join(DEFAULT_BIN_DIR, executable_name)
+        script_path = os.path.join(C.bin_dir(), executable_name)
         if os.path.exists(script_path):
             name = os.path.basename(script_path)
             print(f"[warning] {name} already exists; overwriting it...")
@@ -67,7 +67,7 @@ def remove_links(package, executables_to_unlink):
 
     for exe in executables_to_unlink:
         executable_name = os.path.basename(exe)
-        link_path = os.path.join(DEFAULT_BIN_DIR, executable_name)
+        link_path = os.path.join(C.bin_dir(), executable_name)
         wrapper_env = wrapper.read_env_name(link_path)
         if wrapper_env is None:
             print(f"    {executable_name} \t (failed to get env)")
@@ -80,7 +80,7 @@ def remove_links(package, executables_to_unlink):
 
 
 
-def install_package(package, channels=DEFAULT_CHANNELS):
+def install_package(package, channels=C.channels()):
     # package match specifications
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
     package, match_specs = utils.split_match_specs(package)
@@ -94,13 +94,13 @@ def install_package(package, channels=DEFAULT_CHANNELS):
 
     conda.create_conda_environment(package, channels=channels, match_specs=match_specs)
     executables_to_link = conda.determine_executables_from_env(package)
-    mkpath(DEFAULT_BIN_DIR)
+    mkpath(C.bin_dir())
     create_links(package, executables_to_link)
     print(f"`{package}` has been installed by condax", file=sys.stderr)
 
 
 def inject_package_to_env(
-    env_name, injected_package, channels=DEFAULT_CHANNELS, match_specs=""
+    env_name, injected_package, channels=C.channels(), match_specs=""
 ):
     if not conda.has_conda_env(env_name):
         print(
@@ -161,23 +161,23 @@ def remove_package(package):
 
 
 def update_all_packages():
-    for package in os.listdir(DEFAULT_PREFIX_DIR):
-        if os.path.isdir(os.path.join(DEFAULT_PREFIX_DIR, package)):
+    for package in os.listdir(C.prefix_dir()):
+        if os.path.isdir(os.path.join(C.prefix_dir(), package)):
             update_package(package)
 
 
 def list_all_packages(short=False):
     packages = []
-    for package in os.listdir(DEFAULT_PREFIX_DIR):
-        if os.path.isdir(os.path.join(DEFAULT_PREFIX_DIR, package)):
+    for package in os.listdir(C.prefix_dir()):
+        if os.path.isdir(os.path.join(C.prefix_dir(), package)):
             packages.append(package)
     packages.sort()
     executable_counts = collections.Counter()
 
     # messages follow pipx's text format
     if not short:
-        print(f"conda envs are in {DEFAULT_PREFIX_DIR}")
-        print(f"apps are exposed on your $PATH at {DEFAULT_BIN_DIR}")
+        print(f"conda envs are in {C.prefix_dir()}")
+        print(f"apps are exposed on your $PATH at {C.bin_dir()}")
 
     for package in packages:
         _, python_version, _ = conda.get_package_info(package, "python")
