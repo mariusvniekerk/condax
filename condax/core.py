@@ -6,14 +6,13 @@ import shlex
 import subprocess
 import shutil
 import sys
-from typing import Iterable, List
+from typing import Iterable
 
-from . import conda
-from condax.config import C
-from .paths import mkpath
-from . import wrapper
+import condax.conda as conda
+import condax.wrapper as wrapper
 import condax.utils as utils
-
+from condax.config import C
+from condax.paths import mkpath
 
 Path = pathlib.Path
 
@@ -58,7 +57,9 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
         shutil.copystat(exe, script_path)
 
 
-def create_links(package: str, executables_to_link: Iterable[Path], is_forcing: bool=False):
+def create_links(
+    package: str, executables_to_link: Iterable[Path], is_forcing: bool = False
+):
     if executables_to_link:
         print("Created the following entrypoint links:", file=sys.stderr)
 
@@ -88,7 +89,7 @@ def remove_links(package: str, executables_to_unlink: Iterable[Path]):
             )
 
 
-def install_package(package: str, channels: List[str] = C.channels(), is_forcing: bool=False):
+def install_package(package: str, is_forcing: bool = False):
     # package match specifications
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
     package, match_specs = utils.split_match_specs(package)
@@ -103,7 +104,7 @@ def install_package(package: str, channels: List[str] = C.channels(), is_forcing
             )
             sys.exit(1)
 
-    conda.create_conda_environment(package, channels=channels, match_specs=match_specs)
+    conda.create_conda_environment(package, match_specs=match_specs)
     executables_to_link = conda.determine_executables_from_env(package)
     mkpath(C.bin_dir())
     create_links(package, executables_to_link, is_forcing=is_forcing)
@@ -113,7 +114,6 @@ def install_package(package: str, channels: List[str] = C.channels(), is_forcing
 def inject_package_to_env(
     env_name: str,
     injected_package: str,
-    channels: List[str] = C.channels(),
     match_specs: str = "",
     is_forcing: bool = False,
 ):
@@ -128,12 +128,15 @@ def inject_package_to_env(
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
     injected_package, match_specs = utils.split_match_specs(injected_package)
     conda.inject_to_conda_env(
-        injected_package, env_name, channels=channels, match_specs=match_specs,
+        injected_package,
+        env_name,
+        match_specs=match_specs,
     )
     # TODO: add scripts only if --include-apps
     if False:
         executables_to_link = conda.determine_executables_from_env(
-            env_name, injected_package,
+            env_name,
+            injected_package,
         )
         create_links(env_name, executables_to_link, is_forcing=is_forcing)
     print(f"`{injected_package}` has been injected to `{env_name}`", file=sys.stderr)
@@ -175,7 +178,7 @@ def remove_package(package):
     print(f"`{package}` has been removed from condax", file=sys.stderr)
 
 
-def update_all_packages(is_forcing: bool=False):
+def update_all_packages(is_forcing: bool = False):
     for package_dir in C.prefix_dir().iterdir():
         package = package_dir.name
         update_package(package, is_forcing=is_forcing)
@@ -228,7 +231,7 @@ def list_all_packages(short=False):
         print()
 
 
-def update_package(package: str, is_forcing: bool=False):
+def update_package(package: str, is_forcing: bool = False):
     exit_if_not_installed(package)
     try:
         executables_already_linked = set(conda.determine_executables_from_env(package))

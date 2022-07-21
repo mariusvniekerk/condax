@@ -1,4 +1,3 @@
-import glob
 import json
 import logging
 import os
@@ -12,7 +11,7 @@ from typing import List, Optional, Tuple, Union
 import requests
 
 from condax.config import C
-from .paths import mkpath
+from condax.paths import mkpath
 
 
 Path = pathlib.Path
@@ -53,28 +52,26 @@ def install_conda_exe():
     return target_filename
 
 
-def write_condarc_to_prefix(
-    prefix: Path, channels: str, channel_priority: str = "strict"
-):
+def write_condarc_to_prefix(prefix: Path, channel_priority: str = "strict"):
     """Create a condarc with the channel priority used for installing the given tool.
 
     Earlier channels have higher priority"""
+    channels = C.channels()
     with open(prefix / "condarc", "w") as fo:
         fo.write(f"channel_priority: {channel_priority}\n")
         if channels:
             fo.write("channels:\n")
-            for channel in channels:
-                fo.write(f"  - {channel}\n")
+        for channel in channels:
+            fo.write(f"  - {channel}\n")
         fo.write("\n")
 
 
-def create_conda_environment(package: str, channels=C.channels(), match_specs=""):
+def create_conda_environment(package: str, match_specs=""):
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(package)
 
-    channels_args = []
-    for c in channels:
-        channels_args.extend(["--channel", c])
+    channels = C.channels()
+    channels_args = [x for c in channels for x in ["--channel", c]]
 
     subprocess.check_call(
         [
@@ -90,13 +87,14 @@ def create_conda_environment(package: str, channels=C.channels(), match_specs=""
         ]
     )
 
-    write_condarc_to_prefix(prefix, channels)
+    write_condarc_to_prefix(prefix)
 
 
-def inject_to_conda_env(package: str, env_name: str, channels=C.channels(), match_specs=""):
+def inject_to_conda_env(package: str, env_name: str, match_specs=""):
+
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
-    channels_args = [x for c in channels for x in ["--channel", c]]
+    channels_args = [x for c in C.channels() for x in ["--channel", c]]
 
     subprocess.check_call(
         [
@@ -180,7 +178,9 @@ def get_package_info(package, specific_name=None) -> Tuple[str, str, str]:
     return ("", "", "")
 
 
-def determine_executables_from_env(package: str, injected_package: Optional[str] = None) -> List[Path]:
+def determine_executables_from_env(
+    package: str, injected_package: Optional[str] = None
+) -> List[Path]:
     def is_good(p: Union[str, Path]) -> bool:
         p = Path(p)
         return p.parent.name in ("bin", "sbin", "scripts", "Scripts")

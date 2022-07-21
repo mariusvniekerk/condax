@@ -4,7 +4,6 @@ import sys
 import click
 
 from . import config, core, paths
-from condax.config import C
 
 
 option_config = click.option(
@@ -72,11 +71,12 @@ def cli(config_file):
 @option_config
 @option_is_forcing
 @click.argument("package")
-def install(package, channels, config_file, is_forcing):
+def install(package, config_file, channels, is_forcing):
     if config_file:
         config.set_via_file(config_file)
-    channels = channels if channels else C.channels()
-    core.install_package(package, channels, is_forcing=is_forcing)
+    if channels:
+        config.set_via_value(channels=channels)
+    core.install_package(package, is_forcing=is_forcing)
 
 
 @cli.command(
@@ -129,8 +129,9 @@ def list(short):
 @option_is_forcing
 @click.argument("package")
 def inject(package, envname, channels, is_forcing):
-    channels = channels if channels else C.channels()
-    core.inject_package_to_env(envname, package, channels=channels, is_forcing=is_forcing)
+    if channels:
+        config.set_via_value(channels=channels)
+    core.inject_package_to_env(envname, package, is_forcing=is_forcing)
 
 
 @cli.command(

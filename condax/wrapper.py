@@ -28,7 +28,8 @@ def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
         logging.warning(f"Failed to parse: `{exec_name}`.")
         return None
     elif namespace.exec_name != exec_name:
-        logging.warning(f"The wrapper `{exec_name}` is inconsistent with the target `{namespace.exec_name}`.")
+        msg = f"The wrapper `{exec_name}` is inconsistent with the target `{namespace.exec_name}`."
+        logging.warning(msg)
         return None
 
     return namespace.prefix.name
@@ -38,6 +39,7 @@ class Parser(object):
     """
     Parser.parse(lines) parses lines to get 'conda run' information.
     """
+
     p = argparse.ArgumentParser()
     p_run = p.add_subparsers().add_parser("run")
     p_run.add_argument("--prefix", type=pathlib.Path)
