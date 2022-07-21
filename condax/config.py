@@ -1,18 +1,18 @@
 import os
 import pathlib
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import yaml
 
 
 Path = pathlib.Path
 
-XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME", "~/.config")
-DEFAULT_CONFIG = os.environ.get("CONDAX_CONFIG", os.path.join(XDG_CONFIG_HOME, "condax/config.yaml"))
+_XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME", "~/.config")
+DEFAULT_CONFIG = os.environ.get("CONDAX_CONFIG", os.path.join(_XDG_CONFIG_HOME, "condax/config.yaml"))
 
-XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME", "~/.local/share")
+_XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME", "~/.local/share")
 DEFAULT_PREFIX_DIR = Path(
-    os.environ.get("CONDAX_PREFIX_DIR", os.path.join(XDG_DATA_HOME, "condax/envs"))
+    os.environ.get("CONDAX_PREFIX_DIR", os.path.join(_XDG_DATA_HOME, "condax/envs"))
 ).expanduser()
 DEFAULT_BIN_DIR = Path(
     os.environ.get("CONDAX_BIN_DIR", "~/.local/bin")
@@ -48,26 +48,26 @@ class C:
             raise NameError("Name not accepted in set() method")
 
 
-def set_via_file(config_file: Path):
+def set_via_file(config_file: Union[str, Path]=DEFAULT_CONFIG):
     """
     Load config file and set default values if they are not present.
     """
-    config = dict()
+    config_file = Path(config_file)
     if config_file.exists():
         with open(config_file, "r") as f:
             config = yaml.safe_load(f)
 
-    if "prefix_path" in config:
-        refix_dir = Path(config["prefix_path"]).expanduser()
-        C._set("prefix_dir", refix_dir)
+        if "prefix_path" in config:
+            refix_dir = Path(config["prefix_path"]).expanduser()
+            C._set("prefix_dir", refix_dir)
 
-    if "bin_path" in config:
-        bin_dir = Path(config["bin_path"]).expanduser()
-        C._set("bin_dir", bin_dir)
+        if "bin_path" in config:
+            bin_dir = Path(config["bin_path"]).expanduser()
+            C._set("bin_dir", bin_dir)
 
-    if "channels" in config:
-        channels = config["channels"]
-        C._set("channels", channels)
+        if "channels" in config:
+            channels = config["channels"]
+            C._set("channels", channels)
 
 
 def set_via_value(

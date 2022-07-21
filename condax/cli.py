@@ -43,11 +43,14 @@ option_envname = click.option(
     "--config",
     "config_file",
     type=pathlib.Path,
-    default=pathlib.Path(config.DEFAULT_CONFIG),
     help="Path to a YAML file containing configuration options.",
 )
 def cli(config_file):
-    config.set_via_file(config_file)
+    if config_file:
+        config.set_via_file(config_file)
+    else:
+        # only at the root level
+        config.set_via_file()
 
 
 @cli.command(
