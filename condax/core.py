@@ -18,7 +18,7 @@ import condax.utils as utils
 Path = pathlib.Path
 
 
-def create_link(package: str, exe: Path):
+def create_link(package: str, exe: Path, is_forcing: bool = False):
     executable_name = exe.name
     # TODO: enable `mamba run` option after hiding the banner
     conda_exe = conda.ensure_conda(mamba_ok=False)
@@ -40,9 +40,12 @@ def create_link(package: str, exe: Path):
             )
     else:
         script_path = C.bin_dir() / executable_name
-        if script_path.exists():
-            name = script_path.name
-            print(f"[warning] {name} already exists; overwriting it...")
+        if script_path.exists() and not is_forcing:
+            user_input = input("f{executable_name} already exists. Overwrite? (y/N)")
+            if user_input.strip().lower() not in ("y", "yes"):
+                print(f"Skip installing app: {executable_name}...")
+                return
+
         with open(script_path, "w") as fo:
             fo.writelines(
                 [
