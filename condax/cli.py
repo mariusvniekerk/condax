@@ -1,6 +1,5 @@
 import pathlib
 import sys
-import textwrap
 
 import click
 
@@ -36,15 +35,13 @@ option_envname = click.option(
 
 
 @click.group(
-    help=textwrap.dedent(
-        f"""Install and execute applications packaged by conda.
+    help=f"""Install and execute applications packaged by conda.
 
     Default varibles:
 
       Conda environment location is {config.DEFAULT_PREFIX_DIR}\n
       Links to apps are placed in {config.DEFAULT_BIN_DIR}
     """
-    ),
 )
 @option_config
 def cli(config_file):
@@ -52,6 +49,7 @@ def cli(config_file):
         config.set_via_file(config_file)
     else:
         config.set_via_file(config.DEFAULT_CONFIG)
+
 
 @cli.command(
     help=f"""
