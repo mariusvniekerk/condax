@@ -12,8 +12,8 @@ def conf(tmpdir_factory, monkeypatch):
 
     import condax.config
 
-    monkeypatch.setattr(condax.config, "CONDAX_ENV_PREFIX_DIR", str(prefix))
-    monkeypatch.setattr(condax.config, "CONDAX_LINK_DESTINATION", str(link))
+    monkeypatch.setattr(condax.config, "DEFAULT_PREFIX_DIR", str(prefix))
+    monkeypatch.setattr(condax.config, "DEFAULT_BIN_DIR", str(link))
     monkeypatch.setenv("PATH", str(link), prepend=os.pathsep)
     return {"prefix": str(prefix), "link": str(link)}
 

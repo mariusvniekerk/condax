@@ -9,7 +9,7 @@ import subprocess
 
 import requests
 
-from .config import CONDAX_ENV_PREFIX_DIR, CONDAX_LINK_DESTINATION, DEFAULT_CHANNELS
+from .config import DEFAULT_PREFIX_DIR, DEFAULT_BIN_DIR, DEFAULT_CHANNELS
 from .paths import mkpath
 
 
@@ -39,9 +39,9 @@ def install_conda_exe():
 
     resp = requests.get(f"{conda_exe_prefix}/{conda_exe_file}", allow_redirects=True)
     resp.raise_for_status()
-    mkpath(CONDAX_LINK_DESTINATION)
+    mkpath(DEFAULT_BIN_DIR)
     target_filename = os.path.expanduser(
-        os.path.join(CONDAX_LINK_DESTINATION, "conda.exe")
+        os.path.join(DEFAULT_BIN_DIR, "conda.exe")
     )
     with open(target_filename, "wb") as fo:
         fo.write(resp.content)
@@ -51,8 +51,8 @@ def install_conda_exe():
 
 
 def ensure_dest_prefix():
-    if not os.path.exists(CONDAX_ENV_PREFIX_DIR):
-        os.mkdir(CONDAX_ENV_PREFIX_DIR)
+    if not os.path.exists(DEFAULT_PREFIX_DIR):
+        os.mkdir(DEFAULT_PREFIX_DIR)
 
 
 def write_condarc_to_prefix(prefix, channels, channel_priority="strict"):
@@ -151,7 +151,7 @@ def has_conda_env(package: str) -> bool:
 
 
 def conda_env_prefix(package):
-    return os.path.join(CONDAX_ENV_PREFIX_DIR, package)
+    return os.path.join(DEFAULT_PREFIX_DIR, package)
 
 
 def get_package_info(package, specific_name=None):

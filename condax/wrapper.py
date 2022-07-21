@@ -4,7 +4,7 @@ import shlex
 import logging
 from typing import Optional, List
 
-from .config import CONDAX_LINK_DESTINATION
+from .config import DEFAULT_BIN_DIR
 
 
 def read_env_name(exec_path: str) -> Optional[str]:

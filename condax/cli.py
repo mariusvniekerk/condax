@@ -6,7 +6,6 @@ import click
 
 from . import config, core, paths
 
-
 option_channels = click.option(
     "--channel",
     "-c",
@@ -34,8 +33,8 @@ option_envname = click.option(
 
     Default varibles:
 
-      Conda environment location is {config.CONDAX_ENV_PREFIX_DIR}\n
-      Links to apps are placed in {config.CONDAX_LINK_DESTINATION}
+      Conda environment location is {config.DEFAULT_PREFIX_DIR}\n
+      Links to apps are placed in {config.DEFAULT_BIN_DIR}
     """
     ),
 )
@@ -43,13 +42,11 @@ option_envname = click.option(
     "--config",
     "config_file",
     type=pathlib.Path,
-    default=pathlib.Path(config.CONDAX_CONFIG_PATH),
+    default=pathlib.Path(config.DEFAULT_CONFIG),
     help="Path to a YAML file containing configuration options.",
 )
-@click.pass_context
-def cli(ctx, config_file):
-    ctx.ensure_object(dict)  # don't forget this!
-    ctx.config = config.set_defaults_if_absent(config_file)
+def cli(config_file):
+    config.set_via_file(config_file)
 
 
 @cli.command(
@@ -57,15 +54,14 @@ def cli(ctx, config_file):
     Install a package with condax.
 
     This will install a package into a new conda environment and link the executable
-    provided by it to `{config.CONDAX_LINK_DESTINATION}`.
+    provided by it to `{config.DEFAULT_BIN_DIR}`.
     """
 )
 @option_channels
-@click.pass_context
 @click.argument("package")
-def install(ctx, channels, package):
-    channels = channels if channels else ctx.config["channels"]
-    core.install_package(package, channels=channels)
+def install(package, channels):
+    channels = channels if channels else config.DEFAULT_CHANNELS
+    core.install_package(package, channels)
 
 
 @cli.command(
@@ -76,9 +72,8 @@ def install(ctx, channels, package):
     conda environment.
     """
 )
-@click.pass_context
 @click.argument("package")
-def remove(ctx, package):
+def remove(package):
     core.remove_package(package)
 
 
@@ -87,9 +82,8 @@ def remove(ctx, package):
     Alias for conda remove.
     """
 )
-@click.pass_context
 @click.argument("package")
-def uninstall(ctx, package):
+def uninstall(package):
     core.remove_package(package)
 
 
@@ -106,9 +100,7 @@ def uninstall(ctx, package):
     default=False,
     help="List packages only.",
 )
-@click.pass_context
-def list(ctx, short):
-    print(f'{ctx.config = }')
+def list(short):
     core.list_all_packages(short)
 
 
@@ -119,10 +111,9 @@ def list(ctx, short):
 )
 @option_channels
 @option_envname
-@click.pass_context
 @click.argument("package")
-def inject(ctx, package, envname, channels):
-    channels = channels if channels else ctx.config['channels']
+def inject(package, envname, channels):
+    channels = channels if channels else config.DEFAULT_CHANNELS
     core.inject_package_to_env(envname, package, channels=channels)
 
 
@@ -132,9 +123,8 @@ def inject(ctx, package, envname, channels):
     """
 )
 @option_envname
-@click.pass_context
 @click.argument("package")
-def unject(ctx, package, envname):
+def unject(package, envname):
     core.uninject_package_from_env(envname, package)
 
 
@@ -145,7 +135,7 @@ def unject(ctx, package, envname):
     This can update shell configuration files like `~/.bashrc`."""
 )
 def ensure_path():
-    paths.add_path_to_environment(config.CONDAX_LINK_DESTINATION)
+    paths.add_path_to_environment(config.DEFAULT_BIN_DIR)
 
 
 @cli.command(
@@ -170,4 +160,4 @@ def update(ctx, all, package):
 
 
 if __name__ == "__main__":
-    cli(config={})
+    cli()
