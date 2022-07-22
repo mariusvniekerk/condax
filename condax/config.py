@@ -13,11 +13,11 @@ DEFAULT_CONFIG = os.environ.get("CONDAX_CONFIG", os.path.join(_XDG_CONFIG_HOME, 
 _XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME", "~/.local/share")
 DEFAULT_PREFIX_DIR = Path(
     os.environ.get("CONDAX_PREFIX_DIR", os.path.join(_XDG_DATA_HOME, "condax/envs"))
-).expanduser()
+).expanduser().resolve()
 DEFAULT_BIN_DIR = Path(
     os.environ.get("CONDAX_BIN_DIR", "~/.local/bin")
-).expanduser()
-DEFAULT_CHANNELS = ["conda-forge", "defaults"]
+).expanduser().resolve()
+DEFAULT_CHANNELS = os.environ.get("CONDAX_CHANNELS", "conda-forge  defaults").split()
 
 
 # https://stackoverflow.com/questions/6198372/most-pythonic-way-to-provide-global-configuration-variables-in-config-py
@@ -50,19 +50,33 @@ class C:
 
 def set_via_file(config_file: Union[str, Path]):
     """
-    Load config file and set default values if they are not present.
+    Set the object C from using a config file in YAML format.
     """
     config_file = Path(config_file)
     if config_file.exists():
         with open(config_file, "r") as f:
             config = yaml.safe_load(f)
 
-        if "prefix_path" in config:
-            refix_dir = Path(config["prefix_path"]).expanduser()
-            C._set("prefix_dir", refix_dir)
+        if not config:
+            msg = f"""Config file does not contain config information: Remove {config_file} and try again"""
+            raise ValueError(msg)
 
-        if "bin_path" in config:
-            bin_dir = Path(config["bin_path"]).expanduser()
+        # For compatibility with condax 0.0.5
+        if "prefix_path" in config:
+            prefix_dir = Path(config["prefix_path"]).expanduser().resolve()
+            C._set("prefix_dir", prefix_dir)
+
+        # For compatibility with condax 0.0.5
+        if "target_destination" in config:
+            bin_dir = Path(config["target_destination"]).expanduser().resolve()
+            C._set("bin_dir", bin_dir)
+
+        if "prefix_dir" in config:
+            prefix_dir = Path(config["prefix_dir"]).expanduser().resolve()
+            C._set("prefix_dir", prefix_dir)
+
+        if "bin_dir" in config:
+            bin_dir = Path(config["bin_dir"]).expanduser().resolve()
             C._set("bin_dir", bin_dir)
 
         if "channels" in config:
@@ -71,17 +85,17 @@ def set_via_file(config_file: Union[str, Path]):
 
 
 def set_via_value(
-    prefix_dir: Optional[Path] = None,
-    bin_dir: Optional[Path] = None,
+    prefix_dir: Optional[Union[Path, str]] = None,
+    bin_dir: Optional[Union[Path, str]] = None,
     channels: List[str] = []):  # type: ignore
     """
-    Set default values via items.
+    Set a part of values in the object C by passing values directly.
     """
     if prefix_dir:
-        C._set("prefix_dir", prefix_dir)
+        C._set("prefix_dir", Path(prefix_dir).expanduser().resolve())
 
     if bin_dir:
-        C._set("bin_dir", bin_dir)
+        C._set("bin_dir", Path(bin_dir).expanduser().resolve())
 
     if channels:
         C._set("channels", channels)
