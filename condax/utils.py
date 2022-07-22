@@ -1,5 +1,7 @@
-from typing import Tuple
+from pathlib import Path
+from typing import Tuple, Union
 import re
+
 
 pat = re.compile(r"<=|>=|==|!=|<|>|=")
 
@@ -35,3 +37,10 @@ def split_match_specs(package_with_specs: str) -> Tuple[str, str]:
         len(name) :
     ]
     return name.strip(), match_specs.strip()
+
+
+def to_path(path: Union[str, Path]) -> Path:
+    """
+    Convert a string to a pathlib.Path object.
+    """
+    return Path(path).expanduser().resolve()

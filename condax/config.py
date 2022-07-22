@@ -2,6 +2,7 @@ import os
 import pathlib
 from typing import List, Optional, Union
 
+from condax.utils import to_path
 import yaml
 
 
@@ -11,12 +12,8 @@ _XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME", "~/.config")
 DEFAULT_CONFIG = os.environ.get("CONDAX_CONFIG", os.path.join(_XDG_CONFIG_HOME, "condax/config.yaml"))
 
 _XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME", "~/.local/share")
-DEFAULT_PREFIX_DIR = Path(
-    os.environ.get("CONDAX_PREFIX_DIR", os.path.join(_XDG_DATA_HOME, "condax/envs"))
-).expanduser().resolve()
-DEFAULT_BIN_DIR = Path(
-    os.environ.get("CONDAX_BIN_DIR", "~/.local/bin")
-).expanduser().resolve()
+DEFAULT_PREFIX_DIR = to_path(os.environ.get("CONDAX_PREFIX_DIR", os.path.join(_XDG_DATA_HOME, "condax/envs")))
+DEFAULT_BIN_DIR = to_path(os.environ.get("CONDAX_BIN_DIR", "~/.local/bin"))
 DEFAULT_CHANNELS = os.environ.get("CONDAX_CHANNELS", "conda-forge  defaults").split()
 
 
@@ -63,20 +60,20 @@ def set_via_file(config_file: Union[str, Path]):
 
         # For compatibility with condax 0.0.5
         if "prefix_path" in config:
-            prefix_dir = Path(config["prefix_path"]).expanduser().resolve()
+            prefix_dir = to_path(config["prefix_path"])
             C._set("prefix_dir", prefix_dir)
 
         # For compatibility with condax 0.0.5
         if "target_destination" in config:
-            bin_dir = Path(config["target_destination"]).expanduser().resolve()
+            bin_dir = to_path(config["target_destination"])
             C._set("bin_dir", bin_dir)
 
         if "prefix_dir" in config:
-            prefix_dir = Path(config["prefix_dir"]).expanduser().resolve()
+            prefix_dir = to_path(config["prefix_dir"])
             C._set("prefix_dir", prefix_dir)
 
         if "bin_dir" in config:
-            bin_dir = Path(config["bin_dir"]).expanduser().resolve()
+            bin_dir = to_path(config["bin_dir"])
             C._set("bin_dir", bin_dir)
 
         if "channels" in config:
@@ -92,10 +89,10 @@ def set_via_value(
     Set a part of values in the object C by passing values directly.
     """
     if prefix_dir:
-        C._set("prefix_dir", Path(prefix_dir).expanduser().resolve())
+        C._set("prefix_dir", to_path(prefix_dir))
 
     if bin_dir:
-        C._set("bin_dir", Path(bin_dir).expanduser().resolve())
+        C._set("bin_dir", to_path(bin_dir))
 
     if channels:
         C._set("channels", channels)

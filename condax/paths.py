@@ -11,7 +11,7 @@ def mkpath(path: Union[Path, str]):
     Path(path).mkdir(exist_ok=True, parents=True)
 
 
-def add_path_to_environment(path):
+def add_path_to_environment(path: Union[Path, str]):
     path = str(path)
 
     post_install_message = (
