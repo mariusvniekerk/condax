@@ -9,14 +9,14 @@ jobs:
     strategy:
       max-parallel: 6
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.6, 3.7]
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.8', '3.9', '3.10']
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -25,39 +25,35 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Lint with flake8
+    # - name: Lint with flake8
+    #   run: |
+    #     pip install flake8
+    #     # stop the build if there are Python syntax errors or undefined names
+    #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+    #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Test with pytest
       run: |
-        pip install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-#     - name: Test with pytest
-#       run: |
-#         pip install pytest
-#         
-    - name: Attempt to install library
+        pip install pytest
+        pytest
+
+    - name: Install condax
       run: |
         pip install .
         condax ensure-path
         mkdir -p "${HOME}/.local/bin"
-      
-    - name: Use library to add a package
+
+    - name: Install black via condax
       run: |
         condax install black
 
-    - name: Run the installed package
+    - name: Run black --help
       run: |
         export PATH="$PATH:${HOME}/.local/bin"
         black --help
       if: matrix.os != 'windows-latest'
 
-    - name: Run the installed package
-      run: |
-        export PATH="$PATH:${HOME}/.local/bin"
-        black --help
-      if: matrix.os == 'windows-latest'
-
-    - name: Remove the installed package
+    - name: Remove black from condax environments
       run: |
         condax remove black
