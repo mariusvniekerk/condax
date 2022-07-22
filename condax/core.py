@@ -49,7 +49,7 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
                     "#!/usr/bin/env bash\n",
                     "\n",
                     "# Entrypoint created by condax\n",
-                    f"{conda_exe} run --prefix {prefix} {executable_name} $@\n",
+                    f"{conda_exe} run --prefix {prefix} {executable_name} \"$@\"\n",
                 ]
             )
         shutil.copystat(exe, script_path)
