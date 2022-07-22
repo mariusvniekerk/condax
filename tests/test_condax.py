@@ -1,36 +1,31 @@
-import os
+import pathlib
 import subprocess
-from shutil import which
-
-import pytest
+import tempfile
 
 
-@pytest.fixture
-def conf(tmpdir_factory, monkeypatch):
-    prefix = tmpdir_factory.mktemp("prefix")
-    link = tmpdir_factory.mktemp("link")
+Path = pathlib.Path
 
-    import condax.config
-
-    monkeypatch.setattr(condax.config, "DEFAULT_PREFIX_DIR", str(prefix))
-    monkeypatch.setattr(condax.config, "DEFAULT_BIN_DIR", str(link))
-    monkeypatch.setenv("PATH", str(link), prepend=os.pathsep)
-    return {"prefix": str(prefix), "link": str(link)}
-
-
-def test_pipx_install_roundtrip(conf):
+def test_pipx_install_roundtrip():
     from condax.core import install_package, remove_package
+    import condax.config as config
+    from condax.utils import to_path
 
-    start = which("jq")
-    assert (start is None) or (not start.startswith(conf["link"]))
-    install_package("jq")
-    post_install = which("jq")
-    assert post_install and post_install.startswith(conf["link"])
+    prefix = tempfile.TemporaryDirectory()
+    prefix_dir = to_path(prefix.name)
+    binpath = tempfile.TemporaryDirectory()
+    bin_dir = to_path(binpath.name)
+    channels = ["conda-forge", "default"]
+    config.set_via_value(prefix_dir=prefix_dir, bin_dir=bin_dir, channels=channels)
 
-    # ensure that the executable installed is on PATH
-    subprocess.check_call(["jq", "--help"])
+    cmd = "jq"
+    exe_path = bin_dir / cmd
+    assert not exe_path.exists()
 
-    # remove the env
-    remove_package("jq")
-    post_remove = which("jq")
-    assert (post_remove is None) or (not post_remove.startswith(conf["link"]))
+    install_package(cmd)
+    assert exe_path.exists()
+
+    res = subprocess.run(f"{exe_path} --help", shell=True)
+    assert res.returncode == 0
+
+    remove_package(cmd)
+    assert not exe_path.exists()
