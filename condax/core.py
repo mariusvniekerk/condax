@@ -21,38 +21,30 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
     conda_exe = conda.ensure_conda(mamba_ok=False)
     prefix = conda.conda_env_prefix(package)
     if os.name == "nt":
-        # create a batch file to run our application
-        win_path = pathlib.PureWindowsPath(exe)
-        name_only, _ = os.path.splitext(executable_name)
-        script_path = C.bin_dir() / f"{name_only}.bat"
-        if script_path.exists():
-            print(f"[warning] {name_only}.bat already exists; overwriting it...")
-        with open(script_path, "w") as fo:
-            fo.writelines(
-                [
-                    "@echo off\n",
-                    "REM Entrypoint created by condax\n",
-                    f"{conda_exe} run --prefix {prefix} {executable_name} %*\n",
-                ]
-            )
+        script_lines = [
+            "@echo off\n",
+            "REM Entrypoint created by condax\n",
+            f"{conda_exe} run --prefix {prefix} {executable_name} %*\n",
+        ]
+        ext = ".bat"
     else:
-        script_path = C.bin_dir() / executable_name
-        if script_path.exists() and not is_forcing:
-            user_input = input(f"{executable_name} already exists. Overwrite? (y/N) ")
-            if user_input.strip().lower() not in ("y", "yes"):
-                print(f"Skip installing app: {executable_name}...")
-                return
+        script_lines = [
+            "#!/usr/bin/env bash\n",
+            "\n",
+            "# Entrypoint created by condax\n",
+            f'{conda_exe} run --prefix {prefix} {executable_name} "$@"\n',
+        ]
+        ext = ""
 
-        with open(script_path, "w") as fo:
-            fo.writelines(
-                [
-                    "#!/usr/bin/env bash\n",
-                    "\n",
-                    "# Entrypoint created by condax\n",
-                    f"{conda_exe} run --prefix {prefix} {executable_name} \"$@\"\n",
-                ]
-            )
-        shutil.copystat(exe, script_path)
+    script_path = C.bin_dir() / (executable_name + ext)
+    if script_path.exists() and not is_forcing:
+        user_input = input(f"{executable_name} already exists. Overwrite? (y/N) ")
+        if user_input.strip().lower() not in ("y", "yes"):
+            print(f"Skip installing app: {executable_name}...")
+            return
+    with open(script_path, "w") as fo:
+        fo.writelines(script_lines)
+    shutil.copystat(exe, script_path)
 
 
 def create_links(
