@@ -1,14 +1,14 @@
-import os
-import pathlib
 import sys
+from pathlib import Path
 from typing import Union
 
 import userpath
 
-Path = pathlib.Path
+from condax.utils import to_path
+
 
 def mkpath(path: Union[Path, str]):
-    Path(path).mkdir(exist_ok=True, parents=True)
+    to_path(path).mkdir(exist_ok=True, parents=True)
 
 
 def add_path_to_environment(path: Union[Path, str]):

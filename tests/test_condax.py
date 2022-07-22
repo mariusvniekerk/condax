@@ -40,10 +40,10 @@ def test_install_specific_version():
     import condax.config as config
     from condax.utils import to_path
 
-    prefix = tempfile.TemporaryDirectory()
-    prefix_dir = to_path(prefix.name)
-    binpath = tempfile.TemporaryDirectory()
-    bin_dir = to_path(binpath.name)
+    prefix_fp = tempfile.TemporaryDirectory()
+    prefix_dir = to_path(prefix_fp.name)
+    bin_fp = tempfile.TemporaryDirectory()
+    bin_dir = to_path(bin_fp.name)
     channels = ["conda-forge", "default"]
     config.set_via_value(prefix_dir=prefix_dir, bin_dir=bin_dir, channels=channels)
 

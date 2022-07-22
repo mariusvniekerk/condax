@@ -1,12 +1,10 @@
 import os
-import pathlib
+from pathlib import Path
 from typing import List, Optional, Union
 
 from condax.utils import to_path
 import yaml
 
-
-Path = pathlib.Path
 
 _XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME", "~/.config")
 DEFAULT_CONFIG = os.environ.get("CONDAX_CONFIG", os.path.join(_XDG_CONFIG_HOME, "condax/config.yaml"))
@@ -49,7 +47,7 @@ def set_via_file(config_file: Union[str, Path]):
     """
     Set the object C from using a config file in YAML format.
     """
-    config_file = Path(config_file)
+    config_file = to_path(config_file)
     if config_file.exists():
         with open(config_file, "r") as f:
             config = yaml.safe_load(f)

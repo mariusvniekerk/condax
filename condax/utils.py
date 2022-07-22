@@ -33,9 +33,7 @@ def split_match_specs(package_with_specs: str) -> Tuple[str, str]:
     """
     name, *_ = pat.split(package_with_specs)
     # replace with str.removeprefix() once Python>=3.9 is assured
-    match_specs = package_with_specs[
-        len(name) :
-    ]
+    match_specs = package_with_specs[len(name) :]
     return name.strip(), match_specs.strip()
 
 

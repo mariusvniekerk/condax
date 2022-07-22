@@ -1,12 +1,12 @@
 import json
 import logging
 import os
-import pathlib
 import platform
 import shlex
 import shutil
 import stat
 import subprocess
+from pathlib import Path
 from typing import List, Optional, Tuple, Union
 
 import requests
@@ -14,9 +14,6 @@ import requests
 from condax.config import C
 from condax.paths import mkpath
 from condax.utils import to_path
-
-
-Path = pathlib.Path
 
 
 def ensure_conda(mamba_ok=True):
@@ -184,7 +181,7 @@ def determine_executables_from_env(
     package: str, injected_package: Optional[str] = None
 ) -> List[Path]:
     def is_good(p: Union[str, Path]) -> bool:
-        p = Path(p)
+        p = to_path(p)
         return p.parent.name in ("bin", "sbin", "scripts", "Scripts")
 
     env_prefix = conda_env_prefix(package)

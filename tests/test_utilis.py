@@ -1,7 +1,6 @@
-from condax.utils import split_match_specs
-
-
 def test_split_match_specs():
+    from condax.utils import split_match_specs
+
     x = split_match_specs("numpy=1.11")
     assert x == ("numpy", "=1.11")
 
@@ -19,4 +18,3 @@ def test_split_match_specs():
 
     x = split_match_specs("numpy")
     assert x == ("numpy", "")
-

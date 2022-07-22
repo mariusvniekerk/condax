@@ -1,11 +1,11 @@
 import collections
 import logging
 import os
-import pathlib
 import shlex
 import subprocess
 import shutil
 import sys
+from pathlib import Path
 from typing import Iterable
 
 import condax.conda as conda
@@ -13,8 +13,6 @@ import condax.wrapper as wrapper
 import condax.utils as utils
 from condax.config import C
 from condax.paths import mkpath
-
-Path = pathlib.Path
 
 
 def create_link(package: str, exe: Path, is_forcing: bool = False):
@@ -111,7 +109,7 @@ def install_package(package: str, is_forcing: bool = False):
     print(f"`{package}` has been installed by condax", file=sys.stderr)
 
 
-def inject_package_to_env(
+def inject_package_to(
     env_name: str,
     injected_package: str,
     match_specs: str = "",
@@ -142,7 +140,7 @@ def inject_package_to_env(
     print(f"`{injected_package}` has been injected to `{env_name}`", file=sys.stderr)
 
 
-def uninject_package_from_env(env_name, injected_package):
+def uninject_package_from(env_name, injected_package):
     if not conda.has_conda_env(env_name):
         print(
             f"`{env_name}` does not exist; Abort uninjecting `{injected_package}`...",

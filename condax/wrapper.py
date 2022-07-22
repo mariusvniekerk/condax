@@ -2,10 +2,10 @@ import argparse
 import pathlib
 import shlex
 import logging
+from pathlib import Path
 from typing import Optional, List, Union
 
-Path = pathlib.Path
-
+from condax.utils import to_path
 
 def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
     """
@@ -13,7 +13,7 @@ def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
 
     Returns the environment name within which conda run is executed.
     """
-    path = pathlib.Path(exec_path)
+    path = to_path(exec_path)
     exec_name = path.name
     if not path.exists():
         logging.warning(f"File missing: `{path}`.")
@@ -63,7 +63,7 @@ class Parser(object):
             return None
 
         first_word = words[0]
-        cmd = pathlib.Path(first_word).stem
+        cmd = to_path(first_word).stem
         if cmd not in ("conda", "mamba"):
             return None
 

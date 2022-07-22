@@ -131,7 +131,7 @@ def list(short):
 def inject(package, envname, channels, is_forcing):
     if channels:
         config.set_via_value(channels=channels)
-    core.inject_package_to_env(envname, package, is_forcing=is_forcing)
+    core.inject_package_to(envname, package, is_forcing=is_forcing)
 
 
 @cli.command(
@@ -142,7 +142,7 @@ def inject(package, envname, channels, is_forcing):
 @option_envname
 @click.argument("package")
 def unject(package, envname):
-    core.uninject_package_from_env(envname, package)
+    core.uninject_package_from(envname, package)
 
 
 @cli.command(
