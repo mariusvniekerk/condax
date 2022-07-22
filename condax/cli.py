@@ -141,7 +141,7 @@ def inject(package, envname, channels, is_forcing):
 )
 @option_envname
 @click.argument("package")
-def unject(package, envname):
+def uninject(package, envname):
     core.uninject_package_from(envname, package)
 
 
