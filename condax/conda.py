@@ -217,3 +217,50 @@ def determine_executables_from_env(
                 executables.add(abs_executable_path)
 
     return sorted(executables)
+
+
+def _get_conda_package_dirs() -> List[Path]:
+    """
+    Get the conda's global package directories.
+
+    Equivalent to running `conda info --json | jq '.pkgs_dirs'`
+    """
+    conda_exe = ensure_conda()
+    res = subprocess.run([conda_exe, "info", "--json"], capture_output=True)
+    if res.returncode != 0:
+        return []
+
+    d = json.loads(res.stdout.decode())
+    return [to_path(p) for p in d["pkgs_dirs"]]
+
+
+def _get_dependencies(package: str, pkg_dir: Path) -> List[str]:
+    """
+    A helper function: Get a list of dependent packages for a given package.
+    """
+    name, version, build = get_package_info(package)
+    p = pkg_dir / f"{name}-{version}-{build}/info/index.json"
+    if not p.exists():
+        return []
+
+    with open(p, "r") as fo:
+        index = json.load(fo)
+
+    if not index or "depends" not in index:
+        return []
+
+    return index["depends"]
+
+
+def get_dependencies(package: str) -> List[str]:
+    """
+    Get a list of dependent packages of a given package.
+
+    Returns a list of package match specifications.
+
+    https://stackoverflow.com/questions/26101972/how-to-identify-conda-package-dependents
+    """
+    pkg_dirs = _get_conda_package_dirs()
+    result = [x for pkg_dir in pkg_dirs for x in _get_dependencies(package, pkg_dir)]
+    return result
+
