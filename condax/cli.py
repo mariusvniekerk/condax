@@ -27,9 +27,10 @@ option_envname = click.option(
     "-n",
     "envname",
     required=True,
-    prompt=True,
+    prompt="Specify the environment (Run `condax list --short` to see available ones)",
     type=str,
     help=f"""Specify existing environment to inject into.""",
+    callback=lambda ctx, param, value: value.strip(),
 )
 
 option_is_forcing = click.option(
