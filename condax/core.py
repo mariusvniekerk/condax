@@ -254,8 +254,8 @@ def update_package(package: str, is_forcing: bool = False):
         print(f"{package} update successfully")
 
     except subprocess.CalledProcessError:
-        print(f"`{package}` could not be updated", file=sys.stderr)
-        print(f"removing and recreating instead", file=sys.stderr)
+        print(f"Failed to update `{package}`", file=sys.stderr)
+        print(f"Recreating the environment...", file=sys.stderr)
 
         remove_package(package)
         install_package(package, is_forcing=is_forcing)
