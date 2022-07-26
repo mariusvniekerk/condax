@@ -9,13 +9,13 @@ def test_metadata_to_json():
 
     expected = textwrap.dedent("""
     {
-        "injected": [
+        "injected_packages": [
             {
                 "apps": [
                     "rg"
                 ],
                 "include_apps": false,
-                "package": "ripgrep"
+                "name": "ripgrep"
             }
         ],
         "main_package": {
@@ -23,7 +23,7 @@ def test_metadata_to_json():
                 "jq"
             ],
             "include_apps": true,
-            "package": "jq"
+            "name": "jq"
         }
     }
     """).strip()
