@@ -145,7 +145,14 @@ def inject_package_to(
 def uninject_package_from(env_name: str, injected_package: str):
     if not conda.has_conda_env(env_name):
         print(
-            f"`{env_name}` does not exist; Abort uninjecting `{injected_package}`...",
+            f"`The environment {env_name}` does not exist. Abort uninjecting `{injected_package}`...",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if injected_package not in _get_injected_packages(env_name):
+        print(
+            f"`{injected_package}` is absent in the `{env_name}` environment.",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -361,6 +368,14 @@ def _uninject_from_metadata(env: str, injected: str):
     meta = _load_metadata(env)
     meta.uninject(injected)
     meta.save()
+
+
+def _get_injected_packages(env_name: str) -> List[str]:
+    """
+    Get the list of packages injected into the env.
+    """
+    meta = _load_metadata(env_name)
+    return [p.name for p in meta.injected_packages]
 
 
 def _get_injected_apps(env_name: str, injected_name: str) -> List[str]:
