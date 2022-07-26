@@ -6,7 +6,7 @@ import subprocess
 import shutil
 import sys
 from pathlib import Path
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
 import condax.conda as conda
 import condax.metadata as metadata
@@ -203,18 +203,26 @@ def list_all_packages(short=False):
         else:
             package_header = "".join(
                 [
-                    f"  package {shlex.quote(package_name)}",
-                    f" {package_version} ({package_build})",
+                    f"  {shlex.quote(package_name)}",
+                    f" {package_version} {package_build}",
                     f", using Python {python_version}" if python_version else "",
                 ]
             )
             print(package_header)
 
             try:
-                names = _get_apps(package)
-                executable_counts.update(names)
-                for name in names:
-                    print(f"    - {name}")
+                apps = _get_main_apps(package)
+                executable_counts.update(apps)
+                for app in apps:
+                    print(f"    - {app}")
+
+                name_injected_apps = _get_injected_apps_dict(package)
+                for injected_package, injected_apps in name_injected_apps.items():
+                    executable_counts.update(injected_apps)
+                    name, version, build = conda.get_package_info(package, injected_package)
+                    for app in injected_apps:
+                        print(f"    - {app}  ({name} {version} {build})")
+
 
             except ValueError:
                 print("    (no executables found)")
@@ -239,7 +247,7 @@ def update_package(package: str, is_forcing: bool = False):
 
         to_create = executables_linked_in_updated - executables_already_linked
         to_delete = executables_already_linked - executables_linked_in_updated
-        to_delete_names = [path.name for path in to_delete]
+        to_delete_apps = [path.name for path in to_delete]
 
         create_links(package, to_create, is_forcing)
         remove_links(package, to_delete_names)
@@ -305,6 +313,22 @@ def _get_injected_apps(env_name: str, injected_name: str) -> List[str]:
     meta = _load_metadata(env_name)
     result = [app for p in meta.injected_packages if p.name == injected_name and p.include_apps for app in p.apps]
     return result
+
+
+def _get_main_apps(env_name: str) -> List[str]:
+    """
+    Return a list of all apps
+    """
+    meta = _load_metadata(env_name)
+    return meta.main_package.apps
+
+
+def _get_injected_apps_dict(env_name: str) -> Dict[str, List[str]]:
+    """
+    Return a list of all apps
+    """
+    meta = _load_metadata(env_name)
+    return {p.name: p.apps for p in meta.injected_packages if p.include_apps}
 
 
 def _get_apps(env_name: str) -> List[str]:
