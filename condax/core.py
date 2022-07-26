@@ -182,61 +182,120 @@ def update_all_packages(is_forcing: bool = False):
         update_package(package, is_forcing=is_forcing)
 
 
-def list_all_packages(short=False):
+def list_all_packages(short=False, include_injected=False) -> None:
+    if short:
+        _list_all_packages_short()
+    elif include_injected:
+        _list_all_packages_include_injected()
+    else:
+        _list_all_packages_default()
+
+
+def _list_all_packages_short() -> None:
+    """
+    List packages with --short flag
+    """
+    packages = [pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()]
+    packages.sort()
+
+    for package in packages:
+        package_name, package_version, _ = conda.get_package_info(package)
+        package_header = f"{package_name} {package_version}"
+        print(package_header)
+
+
+def _list_all_packages_default() -> None:
+    """
+    List packages without any flags
+    """
     packages = [pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()]
     packages.sort()
     executable_counts = collections.Counter()
 
     # messages follow pipx's text format
-    if not short:
-        print(f"conda envs are in {C.prefix_dir()}")
-        print(f"apps are exposed on your $PATH at {C.bin_dir()}")
+    _print_envs()
 
     for package in packages:
         _, python_version, _ = conda.get_package_info(package, "python")
         package_name, package_version, package_build = conda.get_package_info(package)
 
-        if short:
-            package_header = f"{package_name} {package_version}"
-            print(package_header)
+        package_header = "".join(
+            [
+                f"{shlex.quote(package_name)}",
+                f" {package_version} {package_build}",
+                f", using Python {python_version}" if python_version else "",
+            ]
+        )
+        print(package_header)
 
+        apps = _get_apps(package)
+        executable_counts.update(apps)
+        if not apps:
+            print(f"    (No apps found for {package})")
         else:
-            package_header = "".join(
-                [
-                    f"  {shlex.quote(package_name)}",
-                    f" {package_version} {package_build}",
-                    f", using Python {python_version}" if python_version else "",
-                ]
-            )
-            print(package_header)
+            for app in apps:
+                print(f"    - {app}")
+        print()
 
-            try:
-                apps = _get_main_apps(package)
-                executable_counts.update(apps)
-                for app in apps:
-                    print(f"    - {app}")
-
-                name_injected_apps = _get_injected_apps_dict(package)
-                for injected_package, injected_apps in name_injected_apps.items():
-                    executable_counts.update(injected_apps)
-                    name, version, build = conda.get_package_info(package, injected_package)
-                    for app in injected_apps:
-                        print(f"    - {app}  ({name} {version} {build})")
-
-
-            except ValueError:
-                print("    (no executables found)")
-
-    # warn if duplicate executables are found
+    # warn if duplicate of executables are found
     duplicates = [name for (name, cnt) in executable_counts.items() if cnt > 1]
     if duplicates:
         print(f"\n[warning] The following executables are duplicated:")
         for name in duplicates:
+            # TODO: include the package environment linked from the executable
             print(f"    * {name}")
         print()
 
 
+def _list_all_packages_include_injected():
+    """
+    List packages with --include-injected flag
+    """
+    package_dirnames = [pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()]
+    package_dirnames.sort()
+
+    # messages follow pipx's text format
+    _print_envs()
+
+    for package_dir in package_dirnames:
+        _, python_version, _ = conda.get_package_info(package_dir, "python")
+        package_name, package_version, package_build = conda.get_package_info(package_dir)
+
+        package_header = "".join(
+            [
+                f"{package_name} {package_version} {package_build}",
+                f", using Python {python_version}" if python_version else "",
+            ]
+        )
+        print(package_header)
+
+        apps = _get_main_apps(package_name)
+        for app in apps:
+            print(f"    - {app}")
+
+        names_injected_apps = _get_injected_apps_dict(package_name)
+        for name, injected_apps in names_injected_apps.items():
+            for app in injected_apps:
+                print(f"    - {app}  (from {name})")
+
+        if names_injected_apps:
+            print("    Included packages:")
+
+        for injected_pkg in names_injected_apps:
+            name, version, build = conda.get_package_info(package_name, injected_pkg)
+            print(f"        {name} {version} {build}")
+
+        print()
+
+
+def _print_envs() -> None:
+    print(f"conda envs are in {C.prefix_dir()}")
+    print(f"apps are exposed on your $PATH at {C.bin_dir()}")
+    print()
+
+
 def update_package(package: str, is_forcing: bool = False):
+
     exit_if_not_installed(package)
     try:
         executables_already_linked = set(conda.determine_executables_from_env(package))

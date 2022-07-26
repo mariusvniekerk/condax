@@ -115,8 +115,17 @@ def uninstall(package):
     default=False,
     help="List packages only.",
 )
-def list(short):
-    core.list_all_packages(short)
+@click.option(
+    "--include-injected",
+    is_flag=True,
+    default=False,
+    help="Show packages injected into the main app's environment.",
+)
+def list(short, include_injected):
+    core.list_all_packages(
+        short=short,
+        include_injected=include_injected
+    )
 
 
 @cli.command(
