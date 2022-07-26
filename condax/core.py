@@ -99,10 +99,9 @@ def install_package(
 
     conda.create_conda_environment(package, match_specs=match_specs)
     executables_to_link = conda.determine_executables_from_env(package)
-    app_names = [p.name for p in executables_to_link]
     mkpath(C.bin_dir())
     create_links(package, executables_to_link, is_forcing=is_forcing)
-    _create_metadata(package, apps=app_names)
+    _create_metadata(package)
     print(f"`{package}` has been installed by condax", file=sys.stderr)
 
 
@@ -123,6 +122,7 @@ def inject_package_to(
     # package match specifications
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
     injected_package, match_specs = utils.split_match_specs(injected_package)
+
     conda.inject_to_conda_env(
         injected_package,
         env_name,
@@ -253,14 +253,26 @@ def update_package(package: str, is_forcing: bool = False):
         install_package(package, is_forcing=is_forcing)
 
 
-def _create_metadata(package: str, apps: List[str]):
+def _create_metadata(package: str):
     """
-    Create a condax_metadata.json file for the package.
-
+    Create metadata file
     """
+    apps = [p.name for p in conda.determine_executables_from_env(package)]
     main = metadata.MainPackage(package, apps)
     meta = metadata.CondaxMetaData(main)
     meta.save()
+
+
+def _load_metadata(env: str) -> metadata.CondaxMetaData:
+    meta = metadata.load(env)
+    # For backward compatibility: metadata can be absent
+    if meta is None:
+        logging.info(f"Recreating condax_metadata.json in {env}...")
+        _create_metadata(env)
+        meta = metadata.load(env)
+        if meta is None:
+            raise ValueError(f"Failed to recreate condax_metadata.json in {env}")
+    return meta
 
 
 def _inject_to_metadata(env: str, injected: str, include_apps: bool = False):
@@ -269,7 +281,8 @@ def _inject_to_metadata(env: str, injected: str, include_apps: bool = False):
     """
     apps = [p.name for p in conda.determine_executables_from_env(env, injected)]
     pkg_to_inject = metadata.InjectedPackage(injected, apps, include_apps=include_apps)
-    meta = metadata.load(env)
+    meta = _load_metadata(env)
+    meta.uninject(injected)    # enable overwriting
     meta.inject(pkg_to_inject)
     meta.save()
 
@@ -278,7 +291,7 @@ def _uninject_from_metadata(env: str, injected: str):
     """
     Uninject the package from the condax_metadata.json file for the env.
     """
-    meta = metadata.load(env)
+    meta = _load_metadata(env)
     meta.uninject(injected)
     meta.save()
 
@@ -289,8 +302,8 @@ def _get_injected_apps(env_name: str, injected_name: str) -> List[str]:
 
     [NOTE] Get a non-empty list only if "include_apps" is True in the metadata.
     """
-    meta = metadata.load(env_name)
-    result = [app for p in meta.injected if p.name == injected_name and p.include_apps for app in p.apps]
+    meta = _load_metadata(env_name)
+    result = [app for p in meta.injected_packages if p.name == injected_name and p.include_apps for app in p.apps]
     return result
 
 
@@ -298,5 +311,6 @@ def _get_apps(env_name: str) -> List[str]:
     """
     Return a list of all apps
     """
-    meta = metadata.load(env_name)
-    return meta.main_package.apps + [app for p in meta.injected if p.include_apps for app in p.apps]
+    meta = _load_metadata(env_name)
+    return meta.main_package.apps + [app for p in meta.injected_packages if p.include_apps for app in p.apps]
+

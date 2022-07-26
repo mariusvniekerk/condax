@@ -12,8 +12,10 @@ class _PackageBase(object):
 
 
 class MainPackage(_PackageBase):
-    def __init__(self, name: str, apps: List[str]):
-        super().__init__(name, apps, include_apps=True)
+    def __init__(self, name: str, apps: List[str], include_apps: bool = True):
+        self.name = name
+        self.apps = apps
+        self.include_apps = True
 
 
 class InjectedPackage(_PackageBase):
@@ -22,36 +24,44 @@ class InjectedPackage(_PackageBase):
 
 class CondaxMetaData(object):
 
-    metadata_file = "condx_metadata.json"
+    metadata_file = "condax_metadata.json"
+
+    @classmethod
+    def get_path(cls, package: str) -> Path:
+        p = C.prefix_dir() / package / cls.metadata_file
+        return p
 
     def __init__(self, main: MainPackage, injected: List[InjectedPackage] = []):
         self.main_package = main
-        self.injected = injected
+        self.injected_packages = injected
 
     def inject(self, package: InjectedPackage):
-        if self.injected is None:
-            self.injected = []
-        already_injected = [p.name for p in self.injected]
+        if self.injected_packages is None:
+            self.injected_packages = []
+        already_injected = [p.name for p in self.injected_packages]
         if package.name in already_injected:
             return
-        self.injected.append(package)
+        self.injected_packages.append(package)
 
     def uninject(self, name: str):
-        self.injected = [p for p in self.injected if p.name != name]
+        self.injected_packages = [p for p in self.injected_packages if p.name != name]
 
     def to_json(self) -> str:
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
     def save(self) -> None:
-        p = C.prefix_dir() / CondaxMetaData.metadata_file
+        p = CondaxMetaData.get_path(self.main_package.name)
         with open(p, "w") as fo:
             fo.write(self.to_json())
 
 
-def load(package: str) -> CondaxMetaData:
-    p = Path(package) / CondaxMetaData.metadata_file
-    with open(p) as fo:
-        d = json.load(fo)
+def load(package: str) -> Optional[CondaxMetaData]:
+    p = CondaxMetaData.get_path(package)
+    if not p.exists():
+        return None
+
+    with open(p) as f:
+        d = json.load(f)
         if not d:
             raise ValueError(f"Failed to read the metadata from {p}")
     return _from_dict(d)
@@ -59,5 +69,5 @@ def load(package: str) -> CondaxMetaData:
 
 def _from_dict(d: dict) -> CondaxMetaData:
     main = MainPackage(**d["main_package"])
-    injected = [InjectedPackage(**p) for p in d["injected"]]
+    injected = [InjectedPackage(**p) for p in d["injected_packages"]]
     return CondaxMetaData(main, injected)
