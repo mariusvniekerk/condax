@@ -211,10 +211,9 @@ def list_all_packages(short=False):
             print(package_header)
 
             try:
-                paths = conda.determine_executables_from_env(package)
-                names = [path.name for path in paths]
+                names = _get_apps(package)
                 executable_counts.update(names)
-                for name in sorted(names):
+                for name in names:
                     print(f"    - {name}")
 
             except ValueError:
