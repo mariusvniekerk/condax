@@ -42,6 +42,7 @@ class Parser(object):
 
     p = argparse.ArgumentParser()
     p.add_argument("--prefix", type=pathlib.Path)
+    p.add_argument("--no-capture-output", action="store_true")
     p.add_argument("exec_name")
     p.add_argument("args")
 
