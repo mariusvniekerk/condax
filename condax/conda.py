@@ -7,6 +7,7 @@ import shutil
 import stat
 import subprocess
 from pathlib import Path
+import sys
 from typing import List, Optional, Tuple, Union
 
 import requests
@@ -72,7 +73,7 @@ def create_conda_environment(package: str, match_specs=""):
     channels = C.channels()
     channels_args = [x for c in channels for x in ["--channel", c]]
 
-    subprocess.check_call(
+    _subprocess_run(
         [
             conda_exe,
             "create",
@@ -95,7 +96,7 @@ def inject_to_conda_env(package: str, env_name: str, match_specs=""):
     prefix = conda_env_prefix(env_name)
     channels_args = [x for c in C.channels() for x in ["--channel", c]]
 
-    subprocess.check_call(
+    res = _subprocess_run(
         [
             conda_exe,
             "install",
@@ -114,7 +115,7 @@ def uninject_from_conda_env(package: str, env_name: str):
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
 
-    subprocess.check_call(
+    _subprocess_run(
         [
             conda_exe,
             "uninstall",
@@ -130,7 +131,7 @@ def uninject_from_conda_env(package: str, env_name: str):
 def remove_conda_env(package: str):
     conda_exe = ensure_conda()
 
-    subprocess.check_call(
+    _subprocess_run(
         [conda_exe, "remove", "--prefix", conda_env_prefix(package), "--all", "--yes"]
     )
 
@@ -138,7 +139,7 @@ def remove_conda_env(package: str):
 def update_conda_env(package: str):
     conda_exe = ensure_conda()
 
-    subprocess.check_call(
+    _subprocess_run(
         [conda_exe, "update", "--prefix", conda_env_prefix(package), "--all", "--yes"]
     )
 
@@ -264,3 +265,14 @@ def get_dependencies(package: str) -> List[str]:
     result = [x for pkg_dir in pkg_dirs for x in _get_dependencies(package, pkg_dir)]
     return result
 
+
+def _subprocess_run(
+    args: List[Union[str, Path]], **kwargs
+) -> subprocess.CompletedProcess:
+    """
+    Run a subprocess and return the CompletedProcess object.
+    """
+    res = subprocess.run(args, **kwargs)
+    if res.returncode != 0:
+        sys.exit(res.returncode)
+    return res
