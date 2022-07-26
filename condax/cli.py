@@ -127,11 +127,19 @@ def list(short):
 @option_channels
 @option_envname
 @option_is_forcing
+@click.option(
+    "--include-apps",
+    help="""Make apps from the injected package available.""",
+    is_flag=True,
+    default=False,
+)
 @click.argument("package")
-def inject(package, envname, channels, is_forcing):
+def inject(package, envname, channels, is_forcing, include_apps):
     if channels:
         config.set_via_value(channels=channels)
-    core.inject_package_to(envname, package, is_forcing=is_forcing)
+    core.inject_package_to(
+        envname, package, is_forcing=is_forcing, include_apps=include_apps
+    )
 
 
 @cli.command(
