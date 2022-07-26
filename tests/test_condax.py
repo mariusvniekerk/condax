@@ -158,3 +158,91 @@ def test_inject_then_uninject():
 
     prefix_fp.cleanup()
     bin_fp.cleanup()
+
+
+def test_inject_with_include_apps():
+    """
+    Test injecting a library to an existing environment with executable, then uninject it.
+    """
+    from condax.core import install_package, inject_package_to, uninject_package_from, remove_package
+    import condax.config as config
+    from condax.utils import to_path
+
+    # prep
+    prefix_fp = tempfile.TemporaryDirectory()
+    prefix_dir = to_path(prefix_fp.name)
+    bin_fp = tempfile.TemporaryDirectory()
+    bin_dir = to_path(bin_fp.name)
+    channels = ["conda-forge", "default"]
+    config.set_via_value(prefix_dir=prefix_dir, bin_dir=bin_dir, channels=channels)
+
+    base_gh = "gh"
+    injected_rg_name = "ripgrep"
+    injected_rg_version = "12.1.1"  # older then the latest
+    injected_rg_spec = f"{injected_rg_name}={injected_rg_version}"
+    injected_rg_cmd = "rg"
+    injected_xsv = "xsv"
+    conda_meta_dir = prefix_dir / base_gh / "conda-meta"
+
+    env_path = prefix_dir / base_gh
+    exe_gh = bin_dir / base_gh
+    exe_rg = bin_dir / injected_rg_cmd
+    exe_xsv = bin_dir / injected_xsv
+
+    # None of the executable, environment, and injected package should exist
+    assert not exe_gh.exists()
+    assert not env_path.exists()
+    assert not exe_rg.exists()
+
+    # Environment and executable should be created after install. Nothing is injected yet.
+    install_package(base_gh)
+    assert exe_gh.exists() and exe_gh.is_file()
+    assert env_path.exists() and env_path.is_dir()
+    assert not exe_rg.exists()
+    assert not exe_xsv.exists()
+
+    # Make sure gh works
+    res = subprocess.run(f"{exe_gh} --help", shell=True, capture_output=True)
+    assert res.returncode == 0
+
+    # Inject ripgrep and xsv to gh env with include_apps=True
+    inject_package_to(base_gh, injected_rg_spec, include_apps=True)
+    inject_package_to(base_gh, injected_xsv, include_apps=True)
+    assert exe_gh.exists() and exe_gh.is_file()
+    assert env_path.exists() and env_path.is_dir()
+    assert exe_rg.exists() and exe_rg.is_file()
+    assert exe_xsv.exists() and exe_xsv.is_file()
+
+    # rg (ripgrep) should be able to run
+    res = subprocess.run(f"{exe_rg} --version", shell=True, capture_output=True)
+    assert res.returncode == 0
+    assert res.stdout and (injected_rg_version in res.stdout.decode())
+
+    # xsv (xsv) should be able to run
+    res = subprocess.run(f"{exe_xsv} --version", shell=True, capture_output=True)
+    assert res.returncode == 0
+
+    # rg gets unavailable after uninjecting it
+    uninject_package_from(base_gh, injected_rg_name)
+    assert exe_gh.exists() and exe_gh.is_file()
+    assert env_path.exists() and env_path.is_dir()
+    assert not exe_rg.exists()
+    assert exe_xsv.exists() and exe_xsv.is_file()
+
+    # Check ripgrep is gone from conda-meta
+    injected_ripgrep_conda_meta = next(conda_meta_dir.glob(f"{injected_rg_name}-{injected_rg_version}-*.json"), None)
+    assert injected_ripgrep_conda_meta is None
+
+    # Check xsv still exists in conda-meta
+    injected_xsv_conda_meta = next(conda_meta_dir.glob(f"{injected_xsv}-*.json"), None)
+    assert injected_xsv_conda_meta is not None and injected_xsv_conda_meta.is_file()
+
+    # Check gh, rg, and xsv are all unavailable after removing the environment
+    remove_package(base_gh)
+    assert not exe_gh.exists()
+    assert not exe_rg.exists()
+    assert not exe_xsv.exists()
+    assert not env_path.exists()
+
+    prefix_fp.cleanup()
+    bin_fp.cleanup()
