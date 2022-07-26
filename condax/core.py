@@ -250,7 +250,7 @@ def update_package(package: str, is_forcing: bool = False):
         to_delete_apps = [path.name for path in to_delete]
 
         create_links(package, to_create, is_forcing)
-        remove_links(package, to_delete_names)
+        remove_links(package, to_delete_apps)
         print(f"{package} update successfully")
 
     except subprocess.CalledProcessError:
