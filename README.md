@@ -28,7 +28,6 @@ Condax is inspired by the excellent [pipx](https://github.com/pipxproject/pipx),
 
 This forked version relies on `conda run` internally, and there are some shortcomings:
 
-- `ipython` does not work.
 - `ERROR conda.cli.main_run:execute` appears whenever a command yields standard error.
 - Windows platform is not supported yet, though it should work on WSL/WSL2.
 

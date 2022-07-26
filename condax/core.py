@@ -25,7 +25,7 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
         script_lines = [
             "@echo off\n",
             "REM Entrypoint created by condax\n",
-            f"{conda_exe} run --prefix {prefix} {executable_name} %*\n",
+            f"{conda_exe} run --no-capture-output --prefix {prefix} {executable_name} %*\n",
         ]
         ext = ".bat"
     else:
@@ -33,7 +33,7 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
             "#!/usr/bin/env bash\n",
             "\n",
             "# Entrypoint created by condax\n",
-            f'{conda_exe} run --prefix {prefix} {executable_name} "$@"\n',
+            f'{conda_exe} run --no-capture-output --prefix {prefix} {executable_name} "$@"\n',
         ]
         ext = ""
 
