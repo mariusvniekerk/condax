@@ -7,7 +7,7 @@ import userpath
 from condax.utils import to_path
 
 
-def mkpath(path: Union[Path, str]):
+def mkpath(path: Union[Path, str]) -> None:
     to_path(path).mkdir(exist_ok=True, parents=True)
 
 

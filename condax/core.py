@@ -98,6 +98,7 @@ def install_package(
 
     conda.create_conda_environment(package, match_specs=match_specs)
     executables_to_link = conda.determine_executables_from_env(package)
+    mkpath(C.bin_dir())
     create_links(package, executables_to_link, is_forcing=is_forcing)
     _create_metadata(package)
     print(f"`{package}` has been installed by condax", file=sys.stderr)
@@ -188,6 +189,7 @@ def update_all_packages(is_forcing: bool = False):
 
 
 def list_all_packages(short=False, include_injected=False) -> None:
+    mkpath(C.prefix_dir())
     if short:
         _list_all_packages_short()
     elif include_injected:

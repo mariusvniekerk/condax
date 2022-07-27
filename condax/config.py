@@ -17,7 +17,7 @@ _default_config = _default_config_windows if os.name == "nt" else _default_confi
 DEFAULT_CONFIG = to_path(os.environ.get("CONDAX_CONFIG", _default_config))
 
 _xdg_data_home = os.environ.get("XDG_DATA_HOME", "~/.local/share")
-_default_prefix_dir_unix = os.path.join(_xdg_data_home, "condax/envs")
+_default_prefix_dir_unix = os.path.join(_xdg_data_home, "condax", "envs")
 _default_prefix_dir_win = os.path.join(_localappdata_dir, "condax", "condax", "envs")
 _default_prefix_dir = _default_prefix_dir_win if os.name == "nt" else _default_prefix_dir_unix
 DEFAULT_PREFIX_DIR = to_path(os.environ.get("CONDAX_PREFIX_DIR", _default_prefix_dir))
@@ -36,15 +36,11 @@ class C:
 
     @staticmethod
     def prefix_dir() -> Path:
-        p = C.__conf["prefix_dir"]
-        mkpath(p)
-        return p
+        return C.__conf["prefix_dir"]
 
     @staticmethod
     def bin_dir() -> Path:
-        p = C.__conf["bin_dir"]
-        mkpath(p)
-        return p
+        return C.__conf["bin_dir"]
 
     @staticmethod
     def channels() -> List[str]:

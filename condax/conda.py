@@ -44,6 +44,7 @@ def install_conda_exe():
 
     resp = requests.get(f"{conda_exe_prefix}/{conda_exe_file}", allow_redirects=True)
     resp.raise_for_status()
+    mkpath(C.bin_dir())
     target_filename = C.bin_dir() / "conda.exe"
     with open(target_filename, "wb") as fo:
         fo.write(resp.content)
