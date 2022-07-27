@@ -26,7 +26,6 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
             "@rem Entrypoint created by condax\n",
             f"@call \"{conda_exe}\" run --no-capture-output --prefix \"{prefix}\" {executable_name} %*\n",
         ]
-        script_path = C.bin_dir() / utils.fix_ext_to_bat(executable_name)
     else:
         script_lines = [
             "#!/usr/bin/env bash\n",
@@ -34,8 +33,8 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
             "# Entrypoint created by condax\n",
             f'{conda_exe} run --no-capture-output --prefix {prefix} {executable_name} "$@"\n',
         ]
-        script_path = C.bin_dir() / executable_name
 
+    script_path = _get_wrapper_path(executable_name)
     if script_path.exists() and not is_forcing:
         user_input = input(f"{executable_name} already exists. Overwrite? (y/N) ")
         if user_input.strip().lower() not in ("y", "yes"):
@@ -62,22 +61,25 @@ def remove_links(package: str, app_names_to_unlink: Iterable[str]):
     if app_names_to_unlink:
         print("Removed the following entrypoint links:", file=sys.stderr)
 
-    for executable_name in app_names_to_unlink:
-        # FIXME: introduce `get_wrapper_path()` instead
-        link_path = C.bin_dir() / executable_name
-        if os.name == "nt":
-            link_path = utils.fix_ext_to_bat(link_path)
-        wrapper_env = wrapper.read_env_name(link_path)
-        if wrapper_env is None:
-            print(f"    {executable_name} \t (failed to get env)")
+    if os.name == "nt":
+        # FIXME: this is hand-waving for now
+        for executable_name in app_names_to_unlink:
+            link_path = _get_wrapper_path(executable_name)
             link_path.unlink(missing_ok=True)
-        elif wrapper_env == package:
-            print(f"    {executable_name}", file=sys.stderr)
-            link_path.unlink()
-        else:
-            logging.info(
-                f"Keep {executable_name} as it runs in {wrapper_env}, not {package}."
-            )
+    else:
+        for executable_name in app_names_to_unlink:
+            link_path = _get_wrapper_path(executable_name)
+            wrapper_env = wrapper.read_env_name(link_path)
+            if wrapper_env is None:
+                print(f"    {executable_name} \t (failed to get env)")
+                link_path.unlink(missing_ok=True)
+            elif wrapper_env == package:
+                print(f"    {executable_name}", file=sys.stderr)
+                link_path.unlink()
+            else:
+                logging.info(
+                    f"Keep {executable_name} as it runs in {wrapper_env}, not {package}."
+                )
 
 
 def install_package(
@@ -414,3 +416,9 @@ def _get_apps(env_name: str) -> List[str]:
     meta = _load_metadata(env_name)
     return meta.main_package.apps + [app for p in meta.injected_packages if p.include_apps for app in p.apps]
 
+
+def _get_wrapper_path(cmd_name: str) -> Path:
+    p = C.bin_dir() / cmd_name
+    if os.name == "nt":
+        p = p.parent / (p.stem + ".bat")
+    return p
