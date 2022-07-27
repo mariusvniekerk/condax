@@ -6,11 +6,21 @@ from condax.utils import to_path
 import yaml
 
 
-_XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME", "~/.config")
-DEFAULT_CONFIG = os.environ.get("CONDAX_CONFIG", os.path.join(_XDG_CONFIG_HOME, "condax/config.yaml"))
+_config_filename = "config.yaml"
+_localappdata_dir = os.environ.get("LOCALAPPDATA", "~\\AppData\\Local")
 
-_XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME", "~/.local/share")
-DEFAULT_PREFIX_DIR = to_path(os.environ.get("CONDAX_PREFIX_DIR", os.path.join(_XDG_DATA_HOME, "condax/envs")))
+_xdg_config_home = os.environ.get("XDG_CONFIG_HOME", "~/.config")
+_default_config_unix = os.path.join(_xdg_config_home, "condax", _config_filename)
+_default_config_windows = os.path.join(_localappdata_dir, "condax", "condax", _config_filename)
+_default_config = _default_config_windows if os.name == "nt" else _default_config_unix
+DEFAULT_CONFIG = to_path(os.environ.get("CONDAX_CONFIG", _default_config))
+
+_xdg_data_home = os.environ.get("XDG_DATA_HOME", "~/.local/share")
+_default_prefix_dir_unix = os.path.join(_xdg_data_home, "condax/envs")
+_default_prefix_dir_win = os.path.join(_localappdata_dir, "condax", "condax", "envs")
+_default_prefix_dir = _default_prefix_dir_win if os.name == "nt" else _default_prefix_dir_unix
+DEFAULT_PREFIX_DIR = to_path(os.environ.get("CONDAX_PREFIX_DIR", _default_prefix_dir))
+
 DEFAULT_BIN_DIR = to_path(os.environ.get("CONDAX_BIN_DIR", "~/.local/bin"))
 DEFAULT_CHANNELS = os.environ.get("CONDAX_CHANNELS", "conda-forge  defaults").split()
 
@@ -82,7 +92,8 @@ def set_via_file(config_file: Union[str, Path]):
 def set_via_value(
     prefix_dir: Optional[Union[Path, str]] = None,
     bin_dir: Optional[Union[Path, str]] = None,
-    channels: List[str] = []):  # type: ignore
+    channels: List[str] = [],
+):
     """
     Set a part of values in the object C by passing values directly.
     """
@@ -94,4 +105,3 @@ def set_via_value(
 
     if channels:
         C._set("channels", channels)
-
