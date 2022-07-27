@@ -205,18 +205,18 @@ def determine_executables_from_env(
     else:
         raise ValueError("Could not determine package files")
 
-    pathext = os.environ.get("PATHEXT", "").split(";")
     executables = set()
     for fn in potential_executables:
-        abs_executable_path = env_prefix / fn
+        abs_executable_path: Path = env_prefix / fn
         # unix
         if os.access(abs_executable_path, os.X_OK):
             executables.add(abs_executable_path)
         # windows
+        pathext = os.environ.get("PATHEXT", "").split(";")
         for ext in pathext:
-            if ext and abs_executable_path.endswith(ext):
+            ext = ext.strip().lower()
+            if ext and abs_executable_path.suffix.lower() == ext:
                 executables.add(abs_executable_path)
-
     return sorted(executables)
 
 
