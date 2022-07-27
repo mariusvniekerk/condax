@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import List, Tuple, Union
 import re
@@ -44,9 +45,17 @@ def to_path(path: Union[str, Path]) -> Path:
     return Path(path).expanduser().resolve()
 
 
-def fix_ext(filename: str, from_: List[str], to_: str) -> str:
+def _fix_ext(filename: str, from_: List[str], to_: str) -> str:
     """Fix file extension to `to_`."""
-    for f in from_:
-        if filename.endswith(f):
-            return filename[:-len(f)] + to_
+    filename = filename
+    _, ext = os.path.splitext(filename)
+    ext = ext.lower()
+    from_ = [s.lower() for s in from_]
+    for e in from_:
+        if e == ext:
+            return filename[: -len(ext)] + to_
     return filename
+
+
+def fix_ext_to_bat(filename: str):
+    return _fix_ext(filename, [".exe"], ".bat")

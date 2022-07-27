@@ -23,11 +23,10 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
     prefix = conda.conda_env_prefix(package)
     if os.name == "nt":
         script_lines = [
-            "@echo off\n",
-            "REM Entrypoint created by condax\n",
-            f"{conda_exe} run --no-capture-output --prefix {prefix} {executable_name} %*\n",
+            "@rem Entrypoint created by condax\n",
+            f"@call \"{conda_exe}\" run --no-capture-output --prefix \"{prefix}\" {executable_name} %*\n",
         ]
-        script_path = C.bin_dir() / utils.fix_ext(executable_name, [".exe"], ".bat")
+        script_path = C.bin_dir() / utils.fix_ext_to_bat(executable_name)
     else:
         script_lines = [
             "#!/usr/bin/env bash\n",
@@ -64,7 +63,10 @@ def remove_links(package: str, app_names_to_unlink: Iterable[str]):
         print("Removed the following entrypoint links:", file=sys.stderr)
 
     for executable_name in app_names_to_unlink:
+        # FIXME: introduce `get_wrapper_path()` instead
         link_path = C.bin_dir() / executable_name
+        if os.name == "nt":
+            link_path = utils.fix_ext_to_bat(link_path)
         wrapper_env = wrapper.read_env_name(link_path)
         if wrapper_env is None:
             print(f"    {executable_name} \t (failed to get env)")
