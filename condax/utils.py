@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 import re
 
 
@@ -42,3 +42,11 @@ def to_path(path: Union[str, Path]) -> Path:
     Convert a string to a pathlib.Path object.
     """
     return Path(path).expanduser().resolve()
+
+
+def fix_ext(filename: str, from_: List[str], to_: str) -> str:
+    """Fix file extension to `to_`."""
+    for f in from_:
+        if filename.endswith(f):
+            return filename[:-len(f)] + to_
+    return filename

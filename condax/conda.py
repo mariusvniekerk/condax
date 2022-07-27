@@ -21,6 +21,7 @@ def ensure_conda(mamba_ok=True):
     execs = ["conda", "conda.exe"]
     if mamba_ok:
         execs.insert(0, "mamba")
+        execs.insert(0, "mamba.exe")
 
     for conda_exec in execs:
         conda_path = shutil.which(conda_exec)

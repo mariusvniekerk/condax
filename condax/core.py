@@ -27,7 +27,7 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
             "REM Entrypoint created by condax\n",
             f"{conda_exe} run --no-capture-output --prefix {prefix} {executable_name} %*\n",
         ]
-        ext = ".bat"
+        script_path = C.bin_dir() / utils.fix_ext(executable_name, [".exe"], ".bat")
     else:
         script_lines = [
             "#!/usr/bin/env bash\n",
@@ -35,9 +35,8 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
             "# Entrypoint created by condax\n",
             f'{conda_exe} run --no-capture-output --prefix {prefix} {executable_name} "$@"\n',
         ]
-        ext = ""
+        script_path = C.bin_dir() / executable_name
 
-    script_path = C.bin_dir() / (executable_name + ext)
     if script_path.exists() and not is_forcing:
         user_input = input(f"{executable_name} already exists. Overwrite? (y/N) ")
         if user_input.strip().lower() not in ("y", "yes"):
