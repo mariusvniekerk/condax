@@ -272,7 +272,9 @@ def _subprocess_run(
     """
     Run a subprocess and return the CompletedProcess object.
     """
-    res = subprocess.run(args, **kwargs)
+    env = os.environ.copy()
+    env.update({"MAMBA_NO_BANNER": "1"})
+    res = subprocess.run(args, **kwargs, env=env)
     if res.returncode != 0:
         sys.exit(res.returncode)
     return res

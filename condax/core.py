@@ -18,7 +18,7 @@ from condax.paths import mkpath
 
 def create_link(package: str, exe: Path, is_forcing: bool = False):
     executable_name = exe.name
-    # TODO: enable `mamba run` option after hiding the banner
+    # FIXME: Enforcing conda (not mamba) for `conda run` for now
     conda_exe = conda.ensure_conda(mamba_ok=False)
     prefix = conda.conda_env_prefix(package)
     if os.name == "nt":
