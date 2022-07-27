@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import List, Optional, Union
+from condax.paths import mkpath
 
 from condax.utils import to_path
 import yaml
@@ -35,11 +36,15 @@ class C:
 
     @staticmethod
     def prefix_dir() -> Path:
-        return C.__conf["prefix_dir"]
+        p = C.__conf["prefix_dir"]
+        mkpath(p)
+        return p
 
     @staticmethod
     def bin_dir() -> Path:
-        return C.__conf["bin_dir"]
+        p = C.__conf["bin_dir"]
+        mkpath(p)
+        return p
 
     @staticmethod
     def channels() -> List[str]:
