@@ -42,3 +42,7 @@ def to_path(path: Union[str, Path]) -> Path:
     Convert a string to a pathlib.Path object.
     """
     return Path(path).expanduser().resolve()
+
+
+def quote(path: Union[Path, str]) -> str:
+    return f'"{str(path)}"'

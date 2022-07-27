@@ -24,7 +24,7 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
     if os.name == "nt":
         script_lines = [
             "@rem Entrypoint created by condax\n",
-            f"@call \"{conda_exe}\" run --no-capture-output --prefix \"{prefix}\" {executable_name} %*\n",
+            f"@call {utils.quote(conda_exe)} run --no-capture-output --prefix {utils.quote(prefix)} {executable_name} %*\n",
         ]
     else:
         script_lines = [

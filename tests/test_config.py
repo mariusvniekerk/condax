@@ -7,13 +7,13 @@ Path = pathlib.Path
 
 
 def test_set_via_value_1():
-    prefix_dir = Path("/some/arbitrary/path/to/something")
+    prefix_dir = Path("/some/arbitrary dir/path/to/something")
     set_via_value(prefix_dir=prefix_dir)
     assert C.prefix_dir() == prefix_dir
 
 
 def test_set_via_value_2():
-    bin_dir = Path("/yet/another/path/toward/foo/bar")
+    bin_dir = Path("/yet/another dir/path/toward/foo/bar")
     set_via_value(bin_dir=bin_dir)
     assert C.bin_dir() == bin_dir
 
@@ -35,7 +35,7 @@ def test_set_via_file_1():
     text = textwrap.dedent(
         """
         prefix_dir: /some/../path/to/
-        bin_dir: ~/.yet/another/path/toward/../foo/
+        bin_dir: "~/.yet/another path/toward/../foo/"
         channels: ["fastchan"]
     """
     )
@@ -44,5 +44,5 @@ def test_set_via_file_1():
 
     set_via_file(temp.name)
     assert C.prefix_dir() == Path("/path/to/")
-    assert C.bin_dir() == Path.home() / ".yet/another/path/foo"
+    assert C.bin_dir() == Path.home() / ".yet/another path/foo"
     assert C.channels() == ["fastchan"]
