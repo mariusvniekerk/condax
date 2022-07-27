@@ -199,9 +199,10 @@ def determine_executables_from_env(
                     for fn in package_info["files"]
                     if (fn.startswith("bin/") and is_good(fn))
                     or (fn.startswith("sbin/") and is_good(fn))
-                    or (fn.lower().startswith("scripts/") and is_good(fn))
+                    # They are Windows style path
+                    or (fn.lower().startswith("scripts") and is_good(fn))
+                    or (fn.lower().startswith("library") and is_good(fn))
                 ]
-                # TODO: Handle windows style paths
                 break
     else:
         raise ValueError("Could not determine package files")
