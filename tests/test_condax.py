@@ -1,9 +1,6 @@
-import pathlib
 import subprocess
 import tempfile
 
-
-Path = pathlib.Path
 
 def test_pipx_install_roundtrip():
     """
