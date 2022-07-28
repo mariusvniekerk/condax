@@ -202,13 +202,11 @@ def remove_package(package: str):
 
 
 def update_all_packages(is_forcing: bool = False):
-    for package_dir in C.prefix_dir().iterdir():
-        package = package_dir.name
+    for package in _get_all_envs():
         update_package(package, is_forcing=is_forcing)
 
 
 def list_all_packages(short=False, include_injected=False) -> None:
-    mkpath(C.prefix_dir())
     if short:
         _list_all_packages_short(include_injected)
     elif include_injected:
@@ -221,10 +219,7 @@ def _list_all_packages_short(include_injected: bool) -> None:
     """
     List packages with --short flag
     """
-    packages = [pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()]
-    packages.sort()
-
-    for package in packages:
+    for package in _get_all_envs():
         package_name, package_version, _ = conda.get_package_info(package)
         package_header = f"{package_name} {package_version}"
         print(package_header)
@@ -239,14 +234,11 @@ def _list_all_packages_default() -> None:
     """
     List packages without any flags
     """
-    packages = [pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()]
-    packages.sort()
-    executable_counts = collections.Counter()
-
     # messages follow pipx's text format
-    _print_envs()
+    _print_condax_dirs()
 
-    for package in packages:
+    executable_counts = collections.Counter()
+    for package in _get_all_envs():
         _, python_version, _ = conda.get_package_info(package, "python")
         package_name, package_version, package_build = conda.get_package_info(package)
 
@@ -283,15 +275,12 @@ def _list_all_packages_include_injected():
     """
     List packages with --include-injected flag
     """
-    package_dirnames = [pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()]
-    package_dirnames.sort()
-
     # messages follow pipx's text format
-    _print_envs()
+    _print_condax_dirs()
 
-    for package_dir in package_dirnames:
-        _, python_version, _ = conda.get_package_info(package_dir, "python")
-        package_name, package_version, package_build = conda.get_package_info(package_dir)
+    for env in _get_all_envs():
+        _, python_version, _ = conda.get_package_info(env, "python")
+        package_name, package_version, package_build = conda.get_package_info(env)
 
         package_header = "".join(
             [
@@ -323,7 +312,7 @@ def _list_all_packages_include_injected():
         print()
 
 
-def _print_envs() -> None:
+def _print_condax_dirs() -> None:
     print(f"conda envs are in {C.prefix_dir()}")
     print(f"apps are exposed on your $PATH at {C.bin_dir()}")
     print()
@@ -403,6 +392,14 @@ def _uninject_from_metadata(env: str, packages_to_uninject: Iterable[str]):
     meta.save()
 
 
+def _get_all_envs() -> List[str]:
+    """
+    Get all conda envs
+    """
+    mkpath(C.prefix_dir())
+    return sorted([pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()])
+
+
 def _get_injected_packages(env_name: str) -> List[str]:
     """
     Get the list of packages injected into the env.
@@ -451,3 +448,26 @@ def _get_wrapper_path(cmd_name: str) -> Path:
     if os.name == "nt":
         p = p.parent / (p.stem + ".bat")
     return p
+
+
+def export_all_environments(out_dir):
+    """Export all environments to a directory.
+    """
+    p = Path(out_dir)
+    p.mkdir(parents=True, exist_ok=True)
+    print("Started exporting all environments to", p)
+
+    envs = _get_all_envs()
+    for env in envs:
+        conda.export_env(env, p)
+        _copy_metadata(env, p)
+
+    print("Done.")
+
+
+def _copy_metadata(env: str, p: Path):
+    """Copy the condax_metadata.json file to the exported directory.
+    """
+    _from = metadata.CondaxMetaData.get_path(env)
+    _to = p / f"{env}.json"
+    shutil.copyfile(_from, _to)

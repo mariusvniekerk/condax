@@ -215,5 +215,19 @@ def update(ctx: click.Context, all: bool, packages: List[str]):
         print(ctx.get_help(), file=sys.stderr)
 
 
+@cli.command(
+    help="""
+    Export all environments installed by condax [experimental].
+    """
+)
+@click.option(
+    "--dir",
+    default="condax_exported",
+    help="Set directory to export to.",
+)
+def export(dir: str):
+    core.export_all_environments(dir)
+
+
 if __name__ == "__main__":
     cli()

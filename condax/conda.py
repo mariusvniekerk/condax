@@ -281,3 +281,22 @@ def _subprocess_run(
     if res.returncode != 0:
         sys.exit(res.returncode)
     return res
+
+
+def export_env(env_name: str, out_dir: Path):
+    """Export an environment to a conda environment file."""
+    conda_exe = ensure_conda()
+    prefix = conda_env_prefix(env_name)
+    filepath = out_dir / f"{env_name}.yml"
+    _subprocess_run(
+        [
+            conda_exe,
+            "env",
+            "export",
+            "--no-builds",
+            "--prefix",
+            prefix,
+            "--file",
+            filepath,
+        ]
+    )
