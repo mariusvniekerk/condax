@@ -90,9 +90,10 @@ def install(packages, config_file, channels, is_forcing):
     conda environment.
     """
 )
-@click.argument("package")
-def remove(package):
-    core.remove_package(package)
+@click.argument("packages", nargs=-1)
+def remove(packages: List[str]):
+    for pkg in packages:
+        core.remove_package(pkg)
 
 
 @cli.command(
@@ -100,9 +101,9 @@ def remove(package):
     Alias for conda remove.
     """
 )
-@click.argument("package")
-def uninstall(package):
-    core.remove_package(package)
+@click.argument("packages", nargs=-1)
+def uninstall(packages: List[str]):
+    remove(packages)
 
 
 @cli.command(
@@ -197,13 +198,14 @@ def ensure_path(config_file):
 @click.option(
     "--all", is_flag=True, help="Set to update all packages installed by condax"
 )
-@click.argument("package", default="", required=False)
+@click.argument("packages", required=False, nargs=-1)
 @click.pass_context
-def update(ctx, all, package):
+def update(ctx: click.Context, all: bool, packages: List[str]):
     if all:
         core.update_all_packages()
-    elif package:
-        core.update_package(package)
+    elif packages:
+        for pkg in packages:
+            core.update_package(pkg)
     else:
         print(ctx.get_help(), file=sys.stderr)
 
