@@ -134,8 +134,7 @@ def test_inject_then_uninject():
 
     # Inject python 3.9 and numpy to ipython env
     # TODO: inject both python=3.9 and numpy=1.22.4 in a single call
-    inject_package_to(base, f"python={python_version}")
-    inject_package_to(base, injected_spec)
+    inject_package_to(base, [f"python={python_version}", injected_spec])
     assert exe_path.exists() and exe_path.is_file()
     assert env_path.exists() and env_path.is_dir()
     assert injected_pkg_lib_path.exists() and injected_pkg_lib_path.is_dir()
@@ -206,8 +205,7 @@ def test_inject_with_include_apps():
     assert res.returncode == 0
 
     # Inject ripgrep and xsv to gh env with include_apps=True
-    inject_package_to(base_gh, injected_rg_spec, include_apps=True)
-    inject_package_to(base_gh, injected_xsv, include_apps=True)
+    inject_package_to(base_gh, [injected_rg_spec, injected_xsv], include_apps=True)
     assert exe_gh.exists() and exe_gh.is_file()
     assert env_path.exists() and env_path.is_dir()
     assert exe_rg.exists() and exe_rg.is_file()

@@ -110,39 +110,41 @@ def install_package(
 
 def inject_package_to(
     env_name: str,
-    injected_package: str,
-    match_specs: str = "",
+    injected_specs: List[str],
     is_forcing: bool = False,
     include_apps: bool = False,
 ):
+    pairs = [utils.split_match_specs(spec) for spec in injected_specs]
+    injected_packages, _ = zip(*pairs)
+    pkgs_str = " and ".join(injected_packages)
     if not conda.has_conda_env(env_name):
         print(
-            f"`{env_name}` does not exist; Abort injecting `{injected_package}`...",
+            f"`{env_name}` does not exist; Abort injecting {pkgs_str} ...",
             file=sys.stderr,
         )
         sys.exit(1)
 
     # package match specifications
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
-    injected_package, match_specs = utils.split_match_specs(injected_package)
+
 
     conda.inject_to_conda_env(
-        injected_package,
+        injected_specs,
         env_name,
-        match_specs=match_specs,
     )
 
     # update the metadata
-    _inject_to_metadata(env_name, injected_package, include_apps)
+    _inject_to_metadata(env_name, injected_packages, include_apps)
 
     # Add links only if --include-apps is set
     if include_apps:
-        executables_to_link = conda.determine_executables_from_env(
-            env_name,
-            injected_package,
-        )
-        create_links(env_name, executables_to_link, is_forcing=is_forcing)
-    print(f"`{injected_package}` has been injected to `{env_name}`", file=sys.stderr)
+        for injected_pkg in injected_packages:
+            executables_to_link = conda.determine_executables_from_env(
+                env_name,
+                injected_pkg,
+            )
+            create_links(env_name, executables_to_link, is_forcing=is_forcing)
+    print(f"`Done injecting {pkgs_str} to `{env_name}`", file=sys.stderr)
 
 
 def uninject_package_from(env_name: str, injected_package: str):
@@ -362,15 +364,19 @@ def _load_metadata(env: str) -> metadata.CondaxMetaData:
     return meta
 
 
-def _inject_to_metadata(env: str, injected: str, include_apps: bool = False):
+def _inject_to_metadata(env: str, injected_packages: Iterable[str], include_apps: bool = False):
     """
     Inject the package into the condax_metadata.json file for the env.
     """
-    apps = [p.name for p in conda.determine_executables_from_env(env, injected)]
-    pkg_to_inject = metadata.InjectedPackage(injected, apps, include_apps=include_apps)
     meta = _load_metadata(env)
-    meta.uninject(injected)    # enable overwriting
-    meta.inject(pkg_to_inject)
+    for injected_pkg in injected_packages:
+        apps = [
+            p.name for p in
+            conda.determine_executables_from_env(env, injected_pkg)
+        ]
+        pkg_to_inject = metadata.InjectedPackage(injected_pkg, apps, include_apps=include_apps)
+        meta.uninject(injected_pkg)    # enable overwriting
+        meta.inject(pkg_to_inject)
     meta.save()
 
 

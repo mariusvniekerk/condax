@@ -91,11 +91,12 @@ def create_conda_environment(package: str, match_specs=""):
     write_condarc_to_prefix(prefix)
 
 
-def inject_to_conda_env(package: str, env_name: str, match_specs=""):
+def inject_to_conda_env(specs: List[str], env_name: str):
 
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
     channels_args = [x for c in C.channels() for x in ["--channel", c]]
+    specs_args = [shlex.quote(spec) for spec in specs]
 
     res = _subprocess_run(
         [
@@ -107,7 +108,7 @@ def inject_to_conda_env(package: str, env_name: str, match_specs=""):
             *channels_args,
             "--quiet",
             "--yes",
-            shlex.quote(package + match_specs),
+            *specs_args,
         ]
     )
 

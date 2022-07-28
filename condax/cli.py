@@ -1,5 +1,6 @@
 import pathlib
 import sys
+from typing import List
 
 import click
 
@@ -144,12 +145,22 @@ def list(short, include_injected):
     is_flag=True,
     default=False,
 )
-@click.argument("package")
-def inject(package, envname, channels, is_forcing, include_apps):
+@click.argument("packages", nargs=-1)
+def inject(
+    packages: List[str],
+    envname: str,
+    channels: List[str],
+    is_forcing: bool,
+    include_apps: bool
+):
     if channels:
         config.set_via_value(channels=channels)
+
     core.inject_package_to(
-        envname, package, is_forcing=is_forcing, include_apps=include_apps
+        envname,
+        packages,
+        is_forcing=is_forcing,
+        include_apps=include_apps
     )
 
 
