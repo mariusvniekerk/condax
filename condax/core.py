@@ -95,7 +95,7 @@ def install_package(
             conda.remove_conda_env(package)
         else:
             print(
-                f"`{package}` is already installed. Run `condax update {package}` to update.",
+                f"`{package}` is already installed. Run `condax install --force {package}` to force install.",
                 file=sys.stderr,
             )
             sys.exit(1)
