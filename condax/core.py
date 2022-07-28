@@ -245,6 +245,7 @@ def _list_all_packages_default() -> None:
             print(f"    (No apps found for {package})")
         else:
             for app in apps:
+                app = utils.strip_exe_ext(app)  # for windows
                 print(f"    - {app}")
         print()
 
@@ -282,11 +283,13 @@ def _list_all_packages_include_injected():
 
         apps = _get_main_apps(package_name)
         for app in apps:
+            app = utils.strip_exe_ext(app)  # for windows
             print(f"    - {app}")
 
         names_injected_apps = _get_injected_apps_dict(package_name)
         for name, injected_apps in names_injected_apps.items():
             for app in injected_apps:
+                app = utils.strip_exe_ext(app)  # for windows
                 print(f"    - {app}  (from {name})")
 
         if names_injected_apps:

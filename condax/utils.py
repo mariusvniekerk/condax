@@ -46,3 +46,11 @@ def to_path(path: Union[str, Path]) -> Path:
 
 def quote(path: Union[Path, str]) -> str:
     return f'"{str(path)}"'
+
+def strip_exe_ext(filename: str) -> str:
+    """
+    Strip the executable extension from a filename.
+    """
+    if filename.lower().endswith(".exe"):
+        return filename[:-4]
+    return filename
