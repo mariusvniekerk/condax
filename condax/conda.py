@@ -147,7 +147,9 @@ def update_conda_env(package: str):
 
 
 def has_conda_env(package: str) -> bool:
-    return conda_env_prefix(package).exists()
+    # TODO: check some properties of a conda environment
+    p = conda_env_prefix(package)
+    return p.exists() and p.is_dir()
 
 
 def conda_env_prefix(package: str) -> Path:
@@ -298,5 +300,25 @@ def export_env(env_name: str, out_dir: Path):
             prefix,
             "--file",
             filepath,
+        ]
+    )
+
+
+def import_env(env_file: Path, is_forcing: bool = False):
+    """Import an environment from a conda environment file."""
+    conda_exe = ensure_conda()
+    force_args = ["--force"] if is_forcing else []
+    env_name = env_file.stem
+    prefix = conda_env_prefix(env_name)
+    _subprocess_run(
+        [
+            conda_exe,
+            "env",
+            "create",
+            *force_args,
+            "--prefix",
+            prefix,
+            "--file",
+            env_file,
         ]
     )

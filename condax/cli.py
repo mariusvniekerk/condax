@@ -217,7 +217,7 @@ def update(ctx: click.Context, all: bool, packages: List[str]):
 
 @cli.command(
     help="""
-    Export all environments installed by condax [experimental].
+    [experimental] Export all environments installed by condax.
     """
 )
 @click.option(
@@ -229,5 +229,22 @@ def export(dir: str):
     core.export_all_environments(dir)
 
 
+@cli.command(
+    "import",
+    help="""
+    [experimental] Import condax environments.
+    """
+)
+@option_is_forcing
+@click.argument(
+    "directory",
+    required=True,
+    type=click.Path(exists=True, dir_okay=True, file_okay=False),
+)
+def run_import(directory: str, is_forcing: bool):
+    core.import_environments(directory, is_forcing)
+
+
 if __name__ == "__main__":
     cli()
+

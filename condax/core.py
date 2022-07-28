@@ -450,7 +450,7 @@ def _get_wrapper_path(cmd_name: str) -> Path:
     return p
 
 
-def export_all_environments(out_dir):
+def export_all_environments(out_dir: str) -> None:
     """Export all environments to a directory.
     """
     p = Path(out_dir)
@@ -470,4 +470,57 @@ def _copy_metadata(env: str, p: Path):
     """
     _from = metadata.CondaxMetaData.get_path(env)
     _to = p / f"{env}.json"
-    shutil.copyfile(_from, _to)
+    shutil.copyfile(_from, _to, follow_symlinks=True)
+
+
+def _overwrite_metadata(envfile: Path):
+    """Copy the condax_metadata.json file to the exported directory.
+    """
+    env = envfile.stem
+    _from = envfile
+    _to = metadata.CondaxMetaData.get_path(env)
+    if _to.exists():
+        shutil.move(_to, _to.with_suffix(".bak"))
+    shutil.copyfile(_from, _to, follow_symlinks=True)
+
+
+def import_environments(in_dir: str, is_forcing: bool) -> None:
+    """Import all environments from a directory.
+    """
+    p = Path(in_dir)
+    print("Started importing environments in", p)
+    for envfile in p.glob("*.yml"):
+        env = envfile.stem
+        if conda.has_conda_env(env):
+            if is_forcing:
+                remove_package(env)
+            else:
+                print(f"Environment {env} already exists. Skipping...")
+                continue
+
+        conda.import_env(envfile)
+
+        metafile = p / (env + ".json")
+        _overwrite_metadata(metafile)
+
+        executables_to_link = _get_executables_to_link(env)
+        create_links(env, executables_to_link, is_forcing=True)
+
+    print("Done.")
+
+
+def _get_executables_to_link(env: str) -> List[Path]:
+    """
+    Return a list of executables to link.
+    """
+    meta = _load_metadata(env)
+
+    env = meta.main_package.name
+    result = conda.determine_executables_from_env(env)
+
+    injected_packages = meta.injected_packages
+    for pkg in injected_packages:
+        if pkg.include_apps:
+            result += conda.determine_executables_from_env(env, pkg.name)
+
+    return result
