@@ -91,7 +91,7 @@ def create_conda_environment(package: str, match_specs=""):
     write_condarc_to_prefix(prefix)
 
 
-def inject_to_conda_env(specs: List[str], env_name: str):
+def inject_to_conda_env(specs: Iterable[str], env_name: str):
 
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)

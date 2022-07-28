@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 import sys
 from typing import List
 
@@ -10,7 +10,7 @@ from . import config, core, paths
 option_config = click.option(
     "--config",
     "config_file",
-    type=pathlib.Path,
+    type=Path,
     help=f"Custom path to a condax config file in YAML. Default: {config.DEFAULT_CONFIG}",
 )
 
@@ -54,7 +54,7 @@ option_is_forcing = click.option(
     """
 )
 @option_config
-def cli(config_file):
+def cli(config_file: Path):
     if config_file:
         config.set_via_file(config_file)
     else:
@@ -73,7 +73,12 @@ def cli(config_file):
 @option_config
 @option_is_forcing
 @click.argument("packages", nargs=-1)
-def install(packages, config_file, channels, is_forcing):
+def install(
+    packages: List[str],
+    config_file: Path,
+    channels: List[str],
+    is_forcing: bool
+):
     if config_file:
         config.set_via_file(config_file)
     if channels:
@@ -125,7 +130,7 @@ def uninstall(packages: List[str]):
     default=False,
     help="Show packages injected into the main app's environment.",
 )
-def list(short, include_injected):
+def list(short: bool, include_injected: bool):
     core.list_all_packages(
         short=short,
         include_injected=include_injected
@@ -182,7 +187,7 @@ def uninject(packages: List[str], envname: str):
     """
 )
 @option_config
-def ensure_path(config_file):
+def ensure_path(config_file: Path):
     if config_file:
         config.set_via_file(config_file)
     paths.add_path_to_environment(config.DEFAULT_BIN_DIR)

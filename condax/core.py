@@ -377,18 +377,18 @@ def _load_metadata(env: str) -> metadata.CondaxMetaData:
     return meta
 
 
-def _inject_to_metadata(env: str, injected_packages: Iterable[str], include_apps: bool = False):
+def _inject_to_metadata(env: str, packages_to_inject: Iterable[str], include_apps: bool = False):
     """
     Inject the package into the condax_metadata.json file for the env.
     """
     meta = _load_metadata(env)
-    for injected_pkg in injected_packages:
+    for pkg in packages_to_inject:
         apps = [
             p.name for p in
-            conda.determine_executables_from_env(env, injected_pkg)
+            conda.determine_executables_from_env(env, pkg)
         ]
-        pkg_to_inject = metadata.InjectedPackage(injected_pkg, apps, include_apps=include_apps)
-        meta.uninject(injected_pkg)    # enable overwriting
+        pkg_to_inject = metadata.InjectedPackage(pkg, apps, include_apps=include_apps)
+        meta.uninject(pkg)    # overwrites if necessary
         meta.inject(pkg_to_inject)
     meta.save()
 
