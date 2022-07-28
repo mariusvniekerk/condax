@@ -8,7 +8,7 @@ import stat
 import subprocess
 from pathlib import Path
 import sys
-from typing import List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 import requests
 
@@ -113,7 +113,7 @@ def inject_to_conda_env(specs: List[str], env_name: str):
     )
 
 
-def uninject_from_conda_env(package: str, env_name: str):
+def uninject_from_conda_env(packages: Iterable[str], env_name: str):
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
 
@@ -125,7 +125,7 @@ def uninject_from_conda_env(package: str, env_name: str):
             prefix,
             "--quiet",
             "--yes",
-            package,
+            *packages,
         ]
     )
 

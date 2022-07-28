@@ -145,7 +145,7 @@ def list(short, include_injected):
     is_flag=True,
     default=False,
 )
-@click.argument("packages", nargs=-1)
+@click.argument("packages", nargs=-1, required=True)
 def inject(
     packages: List[str],
     envname: str,
@@ -170,9 +170,9 @@ def inject(
     """
 )
 @option_envname
-@click.argument("package")
-def uninject(package, envname):
-    core.uninject_package_from(envname, package)
+@click.argument("packages", nargs=-1, required=True)
+def uninject(packages: List[str], envname: str):
+    core.uninject_package_from(envname, packages)
 
 
 @cli.command(

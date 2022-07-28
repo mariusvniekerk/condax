@@ -145,7 +145,7 @@ def test_inject_then_uninject():
     assert res.stdout and (injected_version in res.stdout.decode())
 
     # the library directory should be gone after uninjecting it
-    uninject_package_from(base, injected)
+    uninject_package_from(base, [injected])
     assert exe_path.exists() and exe_path.is_file()
     assert env_path.exists() and env_path.is_dir()
     assert not injected_pkg_lib_path.exists()
@@ -221,7 +221,7 @@ def test_inject_with_include_apps():
     assert res.returncode == 0
 
     # rg gets unavailable after uninjecting it
-    uninject_package_from(base_gh, injected_rg_name)
+    uninject_package_from(base_gh, [injected_rg_name])
     assert exe_gh.exists() and exe_gh.is_file()
     assert env_path.exists() and env_path.is_dir()
     assert not exe_rg.exists()

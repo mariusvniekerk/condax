@@ -147,29 +147,42 @@ def inject_package_to(
     print(f"`Done injecting {pkgs_str} to `{env_name}`", file=sys.stderr)
 
 
-def uninject_package_from(env_name: str, injected_package: str):
+def uninject_package_from(env_name: str, packages_to_uninject: List[str]):
     if not conda.has_conda_env(env_name):
+        pkgs_str = " and ".join(packages_to_uninject)
         print(
-            f"`The environment {env_name}` does not exist. Abort uninjecting `{injected_package}`...",
+            f"`The environment {env_name}` does not exist. Abort uninjecting `{pkgs_str}`...",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    if injected_package not in _get_injected_packages(env_name):
+    already_injected = set(_get_injected_packages(env_name))
+    to_uninject = set(packages_to_uninject)
+    not_found = to_uninject - already_injected
+    for pkg in not_found:
         print(
-            f"`{injected_package}` is absent in the `{env_name}` environment.",
+            f"`{pkg}` is absent in the `{env_name}` environment.",
+            file=sys.stderr,
+        )
+
+    found = to_uninject & already_injected
+    if not found:
+        print(
+            f"`No package is uninjected from {env_name}`",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    conda.uninject_from_conda_env(injected_package, env_name)
+    packages_to_uninject = sorted(found)
+    conda.uninject_from_conda_env(packages_to_uninject, env_name)
 
-    injected_app_names = _get_injected_apps(env_name, injected_package)
+    injected_app_names = [app for pkg in packages_to_uninject for app in _get_injected_apps(env_name, pkg)]
     remove_links(env_name, injected_app_names)
-    _uninject_from_metadata(env_name, injected_package)
+    _uninject_from_metadata(env_name, packages_to_uninject)
 
+    pkgs_str = " and ".join(packages_to_uninject)
     print(
-        f"`{injected_package}` has been uninjected from `{env_name}`", file=sys.stderr
+        f"`{pkgs_str}` has been uninjected from `{env_name}`", file=sys.stderr
     )
 
 
@@ -380,12 +393,13 @@ def _inject_to_metadata(env: str, injected_packages: Iterable[str], include_apps
     meta.save()
 
 
-def _uninject_from_metadata(env: str, injected: str):
+def _uninject_from_metadata(env: str, packages_to_uninject: Iterable[str]):
     """
     Uninject the package from the condax_metadata.json file for the env.
     """
     meta = _load_metadata(env)
-    meta.uninject(injected)
+    for pkg in packages_to_uninject:
+        meta.uninject(pkg)
     meta.save()
 
 
