@@ -195,14 +195,14 @@ def update_all_packages(is_forcing: bool = False):
 def list_all_packages(short=False, include_injected=False) -> None:
     mkpath(C.prefix_dir())
     if short:
-        _list_all_packages_short()
+        _list_all_packages_short(include_injected)
     elif include_injected:
         _list_all_packages_include_injected()
     else:
         _list_all_packages_default()
 
 
-def _list_all_packages_short() -> None:
+def _list_all_packages_short(include_injected: bool) -> None:
     """
     List packages with --short flag
     """
@@ -213,6 +213,11 @@ def _list_all_packages_short() -> None:
         package_name, package_version, _ = conda.get_package_info(package)
         package_header = f"{package_name} {package_version}"
         print(package_header)
+        if include_injected:
+            injected_packages = _get_injected_packages(package_name)
+            for injected_pkg in injected_packages:
+                name, version, _ = conda.get_package_info(package_name, injected_pkg)
+                print(f"    {name} {version}")
 
 
 def _list_all_packages_default() -> None:
@@ -292,10 +297,11 @@ def _list_all_packages_include_injected():
                 app = utils.strip_exe_ext(app)  # for windows
                 print(f"    - {app}  (from {name})")
 
-        if names_injected_apps:
+        injected_packages = _get_injected_packages(package_name)
+        if injected_packages:
             print("    Included packages:")
 
-        for injected_pkg in names_injected_apps:
+        for injected_pkg in injected_packages:
             name, version, build = conda.get_package_info(package_name, injected_pkg)
             print(f"        {name} {version} {build}")
 
