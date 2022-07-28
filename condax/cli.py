@@ -71,13 +71,14 @@ def cli(config_file):
 @option_channels
 @option_config
 @option_is_forcing
-@click.argument("package")
-def install(package, config_file, channels, is_forcing):
+@click.argument("packages", nargs=-1)
+def install(packages, config_file, channels, is_forcing):
     if config_file:
         config.set_via_file(config_file)
     if channels:
         config.set_via_value(channels=channels)
-    core.install_package(package, is_forcing=is_forcing)
+    for pkg in packages:
+        core.install_package(pkg, is_forcing=is_forcing)
 
 
 @cli.command(
