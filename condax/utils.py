@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import List, Tuple, Union
 import re
@@ -46,6 +47,21 @@ def to_path(path: Union[str, Path]) -> Path:
 
 def quote(path: Union[Path, str]) -> str:
     return f'"{str(path)}"'
+
+
+def is_executable(path: Path) -> bool:
+    """
+    Check if a file is executable.
+    """
+    if not path.is_file():
+        return False
+
+    if os.name == "nt":
+        pathexts = [ext.strip().lower() for ext in os.environ.get("PATHEXT", "").split(os.pathsep)]
+        ext = path.suffix.lower()
+        return ext and (ext in pathexts)
+
+    return os.access(path, os.X_OK)
 
 
 def strip_exe_ext(filename: str) -> str:

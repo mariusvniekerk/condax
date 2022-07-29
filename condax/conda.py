@@ -15,6 +15,8 @@ import requests
 from condax.config import C
 from condax.paths import mkpath
 from condax.utils import to_path
+import condax.utils as utils
+
 
 
 def ensure_conda(mamba_ok=True):
@@ -197,7 +199,7 @@ def determine_executables_from_env(
         with open(file_name, "r") as fo:
             package_info = json.load(fo)
             if package_info["name"] == target_name:
-                potential_executables = [
+                potential_executables: List[str] = [
                     fn
                     for fn in package_info["files"]
                     if (fn.startswith("bin/") and is_good(fn))
@@ -212,16 +214,9 @@ def determine_executables_from_env(
 
     executables = set()
     for fn in potential_executables:
-        abs_executable_path: Path = env_prefix / fn
-        # unix
-        if os.access(abs_executable_path, os.X_OK):
-            executables.add(abs_executable_path)
-        # windows
-        pathext = os.environ.get("PATHEXT", "").split(";")
-        for ext in pathext:
-            ext = ext.strip().lower()
-            if ext and abs_executable_path.suffix.lower() == ext:
-                executables.add(abs_executable_path)
+        exec_path = env_prefix / fn
+        if utils.is_executable(exec_path):
+            executables.add(exec_path)
     return sorted(executables)
 
 
