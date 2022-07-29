@@ -1,4 +1,5 @@
 import argparse
+import os
 import pathlib
 import shlex
 import logging
@@ -33,6 +34,29 @@ def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
         return None
 
     return namespace.prefix.name
+
+
+def is_wrapper(exec_path: Union[str, Path]) -> bool:
+    """
+    Check if a file is a condax wrapper script.
+    """
+    path = to_path(exec_path)
+    if not path.exists():
+        return False
+
+    if path.is_dir() or path.is_symlink() or (not path.is_file()):
+        return False
+
+    if not (path.suffix == ".bat" or os.access(path, os.X_OK)):
+        return False
+
+    with open(path) as f:
+        content = f.read()
+
+    if "condax" not in content:
+        return False
+
+    return True
 
 
 class Parser(object):

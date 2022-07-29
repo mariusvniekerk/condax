@@ -502,9 +502,7 @@ def import_environments(in_dir: str, is_forcing: bool) -> None:
 
         metafile = p / (env + ".json")
         _overwrite_metadata(metafile)
-
-        executables_to_link = _get_executables_to_link(env)
-        create_links(env, executables_to_link, is_forcing=True)
+        _recreate_links(env)
 
     print("Done.")
 
@@ -524,3 +522,53 @@ def _get_executables_to_link(env: str) -> List[Path]:
             result += conda.determine_executables_from_env(env, pkg.name)
 
     return result
+
+
+def _recreate_links(env: str) -> None:
+    """
+    Recreate the links for the given environment.
+    """
+    executables_to_link = _get_executables_to_link(env)
+    create_links(env, executables_to_link, is_forcing=True)
+
+
+def _recreate_all_links():
+    """
+    Recreate the links for all environments.
+    """
+    envs = _get_all_envs()
+    for env in envs:
+        _recreate_links(env)
+
+
+def _prune_links():
+    to_apps = {env: _get_apps(env) for env in _get_all_envs()}
+
+    mkpath(C.bin_dir())
+    links = C.bin_dir().glob("*")
+    for link in links:
+        if not wrapper.is_wrapper(link):
+            continue
+
+        target_env = wrapper.read_env_name(link)
+        if target_env is None:
+            logging.info(f"Failed to read env name from {link}")
+            continue
+
+        exec_name = utils.to_body_ext(link.name)
+        valid_apps = to_apps.get(target_env, [])
+        if exec_name not in valid_apps:
+            print("  ... removing", link)
+            link.unlink()
+
+
+def fix_links():
+    """
+    Run the doctor.
+    """
+    mkpath(C.bin_dir())
+
+    print(f"Running doctor for BIN_DIR: {C.bin_dir()}...")
+    _prune_links()
+    _recreate_all_links()
+    print("Done.")

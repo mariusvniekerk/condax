@@ -72,3 +72,26 @@ def strip_exe_ext(filename: str) -> str:
         return filename[:-4]
     return filename
 
+
+def to_body_ext(wrapper_name: str) -> str:
+    """
+    Convert a wrapper script to a body script.
+    """
+    return _replace_suffix(wrapper_name, ".bat", ".exe")
+
+
+def to_wrapper_ext(body_name: str) -> str:
+    """
+    Convert a wrapper script to a body script.
+    """
+    return _replace_suffix(body_name, ".exe", ".bat")
+
+
+def _replace_suffix(filename: str, from_: str, to_: str) -> str:
+    """
+    Replace the extension suffix of a filepath.
+    """
+    p = Path(filename)
+    if p.suffix == from_:
+        return str(p.with_suffix(to_))
+    return filename
