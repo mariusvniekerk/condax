@@ -65,7 +65,7 @@ def test_export_import():
 
     # gh and ipython environment should exist
     # while there is no ripgrep environment because
-    # ripgrep exists under gh environment.
+    # ripgrep exists under gh environment, not under prefix_dir.
     assert env_gh.exists() and env_gh.is_dir()
     assert env_ipython.exists() and env_ipython.is_dir()
     assert not (prefix_dir / injected_rg_name).exists()
@@ -73,7 +73,7 @@ def test_export_import():
     # gh, rg, ipython are exposed
     assert exe_gh.exists() and exe_gh.is_file()
     assert exe_rg.exists() and exe_rg.is_file()
-    assert exe_ipython.exists() and exe_rg.is_file()
+    assert exe_ipython.exists() and exe_ipython.is_file()
 
     # xsv is injected without --include_apps option
     # hence its executable is NOT exposed.
