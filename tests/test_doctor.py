@@ -18,7 +18,8 @@ def test_fix_links():
     prefix_dir = to_path(prefix_fp.name)
     bin_fp = tempfile.TemporaryDirectory()
     bin_dir = to_path(bin_fp.name)
-    config.set_via_value(prefix_dir=prefix_dir, bin_dir=bin_dir)
+    channels = ["conda-forge"]
+    config.set_via_value(prefix_dir=prefix_dir, bin_dir=bin_dir, channels=channels)
 
     gh = "gh"
     injected_rg_name = "ripgrep"
@@ -116,7 +117,8 @@ def test_fix_links_withoug_metadata():
     prefix_dir = to_path(prefix_fp.name)
     bin_fp = tempfile.TemporaryDirectory()
     bin_dir = to_path(bin_fp.name)
-    config.set_via_value(prefix_dir=prefix_dir, bin_dir=bin_dir)
+    channels = ["conda-forge"]
+    config.set_via_value(prefix_dir=prefix_dir, bin_dir=bin_dir, channels=channels)
 
     gh = "gh"
     injected_rg_name = "ripgrep"

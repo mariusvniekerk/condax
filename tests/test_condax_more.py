@@ -19,7 +19,8 @@ def test_export_import():
     prefix_dir = to_path(prefix_fp.name)
     bin_fp = tempfile.TemporaryDirectory()
     bin_dir = to_path(bin_fp.name)
-    config.set_via_value(prefix_dir=prefix_dir, bin_dir=bin_dir)
+    channels = ["conda-forge"]
+    config.set_via_value(prefix_dir=prefix_dir, bin_dir=bin_dir, channels=channels)
 
     export_dir_fp = tempfile.TemporaryDirectory()
     export_dir = to_path(export_dir_fp.name)
