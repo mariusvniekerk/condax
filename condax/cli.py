@@ -4,7 +4,9 @@ from typing import List, Optional
 
 import click
 
-from . import config, core, paths
+import condax.config as config
+import condax.core as core
+import condax.paths as paths
 
 
 option_config = click.option(
@@ -190,7 +192,7 @@ def uninject(packages: List[str], envname: str):
 def ensure_path(config_file: Optional[Path]):
     if config_file:
         config.set_via_file(config_file)
-    paths.add_path_to_environment(config.DEFAULT_BIN_DIR)
+    paths.add_path_to_environment(config.C.bin_dir())
 
 
 @cli.command(
