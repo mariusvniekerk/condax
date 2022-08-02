@@ -55,20 +55,6 @@ def install_conda_exe():
     return target_filename
 
 
-def write_condarc_to_prefix(prefix: Path, channel_priority: str = "strict"):
-    """Create a condarc with the channel priority used for installing the given tool.
-
-    Earlier channels have higher priority"""
-    channels = C.channels()
-    with open(prefix / "condarc", "w") as fo:
-        fo.write(f"channel_priority: {channel_priority}\n")
-        if channels:
-            fo.write("channels:\n")
-        for channel in channels:
-            fo.write(f"  - {channel}\n")
-        fo.write("\n")
-
-
 def create_conda_environment(package: str, match_specs=""):
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(package)
@@ -89,8 +75,6 @@ def create_conda_environment(package: str, match_specs=""):
             shlex.quote(package + match_specs),
         ]
     )
-
-    write_condarc_to_prefix(prefix)
 
 
 def inject_to_conda_env(specs: Iterable[str], env_name: str):
