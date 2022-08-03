@@ -6,7 +6,6 @@ from condax.paths import mkpath
 from condax.utils import to_path
 import yaml
 
-
 _config_filename = "config.yaml"
 _localappdata_dir = os.environ.get("LOCALAPPDATA", "~\\AppData\\Local")
 
@@ -24,6 +23,8 @@ DEFAULT_PREFIX_DIR = to_path(os.environ.get("CONDAX_PREFIX_DIR", _default_prefix
 
 DEFAULT_BIN_DIR = to_path(os.environ.get("CONDAX_BIN_DIR", "~/.local/bin"))
 DEFAULT_CHANNELS = os.environ.get("CONDAX_CHANNELS", "conda-forge  defaults").split()
+
+CONDA_ENVIRONMENT_FILE = to_path("~/.conda/environments.txt")
 
 
 # https://stackoverflow.com/questions/6198372/most-pythonic-way-to-provide-global-configuration-variables-in-config-py

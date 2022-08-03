@@ -12,6 +12,7 @@ import condax.conda as conda
 import condax.metadata as metadata
 import condax.wrapper as wrapper
 import condax.utils as utils
+import condax.config as config
 from condax.config import C
 from condax.paths import mkpath
 
@@ -567,6 +568,26 @@ def _prune_links():
             link.unlink()
 
 
+def _add_to_conda_env_list() -> None:
+    """Add condax environment prefixes to ~/.conda/environments.txt if not already there.
+    """
+    envs = _get_all_envs()
+    prefixe_str_set = {str(conda.conda_env_prefix(env)) for env in envs}
+    lines = set()
+
+    envs_txt = config.CONDA_ENVIRONMENT_FILE
+    if envs_txt.exists():
+        with envs_txt.open() as f:
+            lines = {line.strip() for line in f.readlines()}
+
+    missing = sorted(prefixe_str_set - lines)
+    if missing:
+        envs_txt.parent.mkdir(exist_ok=True)
+        with envs_txt.open("a") as f:
+            print("", file=f)
+            print("\n".join(missing), file=f)
+
+
 def fix_links():
     """
     Run the repair lin.
@@ -576,4 +597,5 @@ def fix_links():
     print(f"Repairing links in the BIN_DIR: {C.bin_dir()}...")
     _prune_links()
     _recreate_all_links()
+    _add_to_conda_env_list()
     print("  ... Done.")
