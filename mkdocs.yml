@@ -3,8 +3,8 @@ site_description: Install and run applications packaged with conda in isolated e
 
 theme:
   name: "material"
-repo_name: mariusvniekerk/condax
-repo_url: https://github.com/mariusvniekerk/condax
+repo_name: yamaton/condax
+repo_url: https://github.com/yamaton/condax
 
 nav:
   - Home: "index.md"
