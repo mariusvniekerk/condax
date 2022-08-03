@@ -1,7 +1,7 @@
 Thanks for your interest in contributing to condax!
 
 ## Dependencies
-Dependencies for condax can be installed by using any package manager you like.  For convenience a `environment.yaml` file 
+Dependencies for condax can be installed by using any package manager you like.  For convenience a `environment.yaml` file
 is provided to get you set up quickly.
 
 ```
@@ -12,7 +12,7 @@ conda create env
 In your environmnent run the tests as follows
 
 ```
-python -m pytest -vrsx .
+python -m pytest -vv .
 ```
 
 ## Testing condax on Github Actions

@@ -1,10 +1,13 @@
 # What does this do?
 
-condax works similarly to [pipx](https://pipxproject.github.io/pipx/how-pipx-works/).  
+condax works as scripts calling `conda run`. Specifically,
 
-When installing a package condax will 
+```bash
+conda run --no-capture-output --prefix <env-directory> '<command-and-arguments>'
+```
 
-* create a conda environment in `~/.condax/PACKAGE`
+When installing a package `condax` will
+
+* create a conda environment in `~/.local/condax/envs/PACKAGE`
 * identify the binaries/executables that are installed by `PACAKGE` (not its dependencies)
-* symlink those binaries to `~/.local/bin`
-
+* create a shell script or batch file in `~/.local/bin`
