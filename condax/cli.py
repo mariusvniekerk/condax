@@ -254,7 +254,7 @@ def run_import(directory: str, is_forcing: bool):
     By default BIN_DIR is {config.DEFAULT_BIN_DIR}.
     """
 )
-def doctor():
+def repair():
     core.fix_links()
 
 

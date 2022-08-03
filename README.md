@@ -58,5 +58,5 @@ mv ~/.condax/* ~/.local/share/condax/envs
 sed -i 's|.condax|.local/share/condax/envs|g' ~/.conda/environments.txt
 
 # Fix links
-condax doctor
+condax repair
 ```

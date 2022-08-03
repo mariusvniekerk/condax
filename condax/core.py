@@ -569,11 +569,11 @@ def _prune_links():
 
 def fix_links():
     """
-    Run the doctor.
+    Run the repair lin.
     """
     mkpath(C.bin_dir())
 
-    print(f"Running doctor for BIN_DIR: {C.bin_dir()}...")
+    print(f"Repairing links in the BIN_DIR: {C.bin_dir()}...")
     _prune_links()
     _recreate_all_links()
-    print("Done.")
+    print("  ... Done.")
