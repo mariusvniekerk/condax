@@ -105,7 +105,7 @@ def remove(packages: List[str]):
 
 @cli.command(
     help="""
-    Alias for conda remove.
+    Alias for condax remove.
     """
 )
 @click.argument("packages", nargs=-1)
@@ -174,7 +174,7 @@ def inject(
 
 @cli.command(
     help="""
-    Uninject a package from existing environment managed by condax.
+    Uninject a package from an existing environment.
     """
 )
 @option_envname
