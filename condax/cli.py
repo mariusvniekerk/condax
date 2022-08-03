@@ -254,12 +254,6 @@ def run_import(directory: str, is_forcing: bool):
     By default BIN_DIR is {config.DEFAULT_BIN_DIR}.
     """
 )
-@option_is_forcing
-@click.argument(
-    "directory",
-    required=True,
-    type=click.Path(exists=True, dir_okay=True, file_okay=False),
-)
 def doctor():
     core.fix_links()
 

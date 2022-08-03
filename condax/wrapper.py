@@ -22,11 +22,18 @@ def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
     if path.is_symlink():
         return None
 
-    with open(path) as f:
-        namespace = Parser.parse(f.read())
+    namespace = None
+    try:
+        with open(path) as f:
+            namespace = Parser.parse(f.read())
+    except UnicodeDecodeError:
+        return None
+    except:
+        logging.warning(f"Failed in file opening and parsing: {path}")
+        return None
 
     if namespace is None:
-        logging.warning(f"Failed to parse: `{exec_name}`.")
+        logging.warning(f"Failed to parse: `{exec_name}`:  {path}")
         return None
     elif namespace.exec_name != exec_name:
         msg = f"The wrapper `{exec_name}` is inconsistent with the target `{namespace.exec_name}`."
@@ -50,10 +57,16 @@ def is_wrapper(exec_path: Union[str, Path]) -> bool:
     if not (path.suffix == ".bat" or os.access(path, os.X_OK)):
         return False
 
-    with open(path) as f:
-        content = f.read()
+    try:
+        with open(path, "r", encoding='utf-8') as f:
+            content = f.read()
+    except UnicodeDecodeError:
+        return False
+    except:
+        logging.warning(f"Something wrong with {path}")
+        return False
 
-    if "condax" not in content:
+    if "created by condax" not in content:
         return False
 
     return True

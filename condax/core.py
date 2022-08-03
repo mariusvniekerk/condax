@@ -40,6 +40,8 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
         if user_input.strip().lower() not in ("y", "yes"):
             print(f"Skip installing app: {executable_name}...")
             return
+
+    script_path.unlink(missing_ok=True)
     with open(script_path, "w") as fo:
         fo.writelines(script_lines)
     shutil.copystat(exe, script_path)
@@ -547,6 +549,9 @@ def _prune_links():
     mkpath(C.bin_dir())
     links = C.bin_dir().glob("*")
     for link in links:
+        if link.is_symlink() and (not link.exists()):
+            link.unlink()
+
         if not wrapper.is_wrapper(link):
             continue
 
