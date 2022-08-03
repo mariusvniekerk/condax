@@ -27,9 +27,9 @@ python3 -m pip install -U condax
 ```
 
 ### Installation Options
-condax's default binary location is `~/.local/bin`. This can be overriden using `link_destination` in `~/.condaxrc`.
+condax's default binary location is `~/.local/bin`. This can be overriden using `bin_dir` in `~/.config/condax/config.yaml`.
 
-condax's default conda environment location is `~/.local/condax`. This can be overriden using `prefix_path` in `~/.condaxrc`.
+condax's default conda environment location is `~/.local/condax`. This can be overriden using `prefix_dir` in `~/.config/condax/config.yaml`.
 
 ## Shell Completion
 You can easily get your shell's tab completions working by following instructions printed with this command:
