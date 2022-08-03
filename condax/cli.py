@@ -7,6 +7,7 @@ import click
 import condax.config as config
 import condax.core as core
 import condax.paths as paths
+import condax.migrate as migrate
 
 
 option_config = click.option(
@@ -254,7 +255,16 @@ def run_import(directory: str, is_forcing: bool):
     By default BIN_DIR is {config.DEFAULT_BIN_DIR}.
     """
 )
-def repair():
+@click.option(
+    "--migrate",
+    "is_migrating",
+    help="""Migrate from the original condax version.""",
+    is_flag=True,
+    default=False,
+)
+def repair(is_migrating):
+    if is_migrating:
+        migrate.from_old_version()
     core.fix_links()
 
 
