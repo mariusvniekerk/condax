@@ -57,5 +57,6 @@ mv ~/.condax/* ~/.local/share/condax/envs
 # Fix conda's list of environments
 sed -i 's|.condax|.local/share/condax/envs|g' ~/.conda/environments.txt
 
-# [TODO] implement `condax reinstall-all` to fix links
+# Fix links
+condax doctor
 ```
