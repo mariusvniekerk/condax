@@ -98,7 +98,7 @@ def test_fix_links():
 
 
 
-def test_fix_links_withoug_metadata():
+def test_fix_links_without_metadata():
     """
     When metadata file (condax_metadata.json) is absent,
     fix_links() should recover the links of the environments,

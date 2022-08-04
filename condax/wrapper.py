@@ -7,15 +7,16 @@ from pathlib import Path
 from typing import Optional, List, Union
 
 from condax.utils import to_path
+import condax.config as config
 
-def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
+def read_env_name(script_path: Union[str, Path]) -> Optional[str]:
     """
     Read a condax wrapper script.
 
     Returns the environment name within which conda run is executed.
     """
-    path = to_path(exec_path)
-    exec_name = path.name
+    path = to_path(script_path)
+    script_name = path.name
     if not path.exists():
         logging.warning(f"File missing: `{path}`.")
         return None
@@ -32,11 +33,16 @@ def read_env_name(exec_path: Union[str, Path]) -> Optional[str]:
         logging.warning(f"Failed in file opening and parsing: {path}")
         return None
 
+
     if namespace is None:
-        logging.warning(f"Failed to parse: `{exec_name}`:  {path}")
+        logging.warning(f"Failed to parse: `{script_name}`:  {path}")
         return None
-    elif namespace.exec_name != exec_name:
-        msg = f"The wrapper `{exec_name}` is inconsistent with the target `{namespace.exec_name}`."
+    elif namespace.exec_path.name != script_name:
+        msg = f"The wrapper's {script_name} is inconsistent with the target {namespace.exec_path.name}."
+        logging.warning(msg)
+        return None
+    elif not namespace.exec_path.exists():
+        msg = f"The wrapper's exec_path {namespace.exec_path} does not exist."
         logging.warning(msg)
         return None
 
@@ -80,7 +86,7 @@ class Parser(object):
     p = argparse.ArgumentParser()
     p.add_argument("--prefix", type=pathlib.Path)
     p.add_argument("--no-capture-output", action="store_true")
-    p.add_argument("exec_name")
+    p.add_argument("exec_path", type=pathlib.Path)
     p.add_argument("args")
 
     @classmethod
