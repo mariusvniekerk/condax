@@ -95,3 +95,12 @@ def _replace_suffix(filename: str, from_: str, to_: str) -> str:
     if p.suffix == from_:
         return str(p.with_suffix(to_))
     return filename
+
+
+def unlink(path: Path):
+    """Replacement to Path.unlink(missing_ok=True)
+
+    as it is unavailable in Python < 3.8.
+    """
+    if path.exists():
+        path.unlink()

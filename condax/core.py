@@ -42,7 +42,7 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
             print(f"Skip installing app: {executable_name}...")
             return
 
-    script_path.unlink(missing_ok=True)
+    utils.unlink(script_path)
     with open(script_path, "w") as fo:
         fo.writelines(script_lines)
     shutil.copystat(exe, script_path)
@@ -68,14 +68,14 @@ def remove_links(package: str, app_names_to_unlink: Iterable[str]):
         # FIXME: this is hand-waving for now
         for executable_name in app_names_to_unlink:
             link_path = _get_wrapper_path(executable_name)
-            link_path.unlink(missing_ok=True)
+            utils.unlink(link_path)
     else:
         for executable_name in app_names_to_unlink:
             link_path = _get_wrapper_path(executable_name)
             wrapper_env = wrapper.read_env_name(link_path)
             if wrapper_env is None:
                 print(f"    {executable_name} \t (failed to get env)")
-                link_path.unlink(missing_ok=True)
+                utils.unlink(link_path)
             elif wrapper_env == package:
                 print(f"    {executable_name}", file=sys.stderr)
                 link_path.unlink()

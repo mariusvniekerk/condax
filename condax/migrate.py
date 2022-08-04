@@ -8,6 +8,7 @@ import shutil
 
 import condax.config as config
 import condax.paths as paths
+import condax.utils as utils
 
 def from_old_version() -> None:
     """Migrate condax settigns from the old version to the current forked version.
@@ -64,7 +65,7 @@ def repair_conda_environment_file() -> None:
         content.replace(prefix_from_str, prefix_to_str)
 
         backup = src.with_suffix(".bak")
-        backup.unlink(missing_ok=True)  # overwrite backup file if exists
+        utils.unlink(backup)     # overwrite backup file if exists
         shutil.move(src, backup)
 
         print(f"  [migrate] Fixed paths at {src}")
