@@ -39,8 +39,12 @@ def test_pipx_install_roundtrip():
     assert not exe_path.exists()
     assert not env_path.exists()
 
-    prefix_fp.cleanup()
-    bin_fp.cleanup()
+    # FileNotFoundError in Python 3.7
+    try:
+        prefix_fp.cleanup()
+        bin_fp.cleanup()
+    except:
+        pass
 
 
 def test_install_specific_version():
@@ -84,8 +88,12 @@ def test_install_specific_version():
     assert not exe_path.exists()
     assert not env_path.exists()
 
-    prefix_fp.cleanup()
-    bin_fp.cleanup()
+    # FileNotFoundError in Python 3.7
+    try:
+        prefix_fp.cleanup()
+        bin_fp.cleanup()
+    except:
+        pass
 
 
 def test_inject_then_uninject():
@@ -152,8 +160,12 @@ def test_inject_then_uninject():
     assert res.returncode == 1
     assert "ModuleNotFoundError" in res.stdout.decode()
 
-    prefix_fp.cleanup()
-    bin_fp.cleanup()
+    # FileNotFoundError in Python 3.7
+    try:
+        prefix_fp.cleanup()
+        bin_fp.cleanup()
+    except:
+        pass
 
 
 def test_inject_with_include_apps():
@@ -239,5 +251,9 @@ def test_inject_with_include_apps():
     assert not exe_xsv.exists()
     assert not env_path.exists()
 
-    prefix_fp.cleanup()
-    bin_fp.cleanup()
+    # FileNotFoundError in Python 3.7
+    try:
+        prefix_fp.cleanup()
+        bin_fp.cleanup()
+    except:
+        pass
