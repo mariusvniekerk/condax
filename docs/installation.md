@@ -6,7 +6,7 @@ condax does NOT need a preexisting conda installation, though if it can find one
 
 ## Install using pip
 
-python 3.6+ with pip AND git is required to install condax.
+python 3.7+ with pip AND git is required to install condax.
 
 Assuming you have `pip` and `git` installed, run:
 ```
