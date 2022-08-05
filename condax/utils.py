@@ -148,3 +148,22 @@ def get_conda_url() -> str:
 
     url = urllib.parse.urljoin(base, subdir)
     return url
+
+
+def to_bool(value: Union[str, bool]) -> bool:
+    if isinstance(value, bool):
+        return value
+
+    if not value:
+        return False
+
+    if value.lower() == "false":
+        return False
+
+    try:
+        if int(value) > 0:
+            return True
+    except:
+        pass
+
+    return False

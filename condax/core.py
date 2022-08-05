@@ -33,6 +33,9 @@ def create_link(package: str, exe: Path, is_forcing: bool = False):
             "# Entrypoint created by condax\n",
             f'{utils.quote(micromamba_exe)} run --prefix {utils.quote(prefix)} {utils.quote(exe)} "$@"\n',
         ]
+        if utils.to_bool(os.environ.get("CONDAX_HIDE_EXITCODE", False)):
+            # Let scripts to return exit code 0 constantly
+            script_lines.append("exit 0\n")
 
     script_path = _get_wrapper_path(executable_name)
     if script_path.exists() and not is_forcing:
