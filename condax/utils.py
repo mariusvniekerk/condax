@@ -45,6 +45,11 @@ def to_path(path: Union[str, Path]) -> Path:
     return Path(path).expanduser().resolve()
 
 
+def mkdir(path: Union[Path, str]) -> None:
+    """mkdir -p path"""
+    to_path(path).mkdir(exist_ok=True, parents=True)
+
+
 def quote(path: Union[Path, str]) -> str:
     return f'"{str(path)}"'
 

@@ -4,11 +4,6 @@ from typing import Union
 
 import userpath
 
-from condax.utils import to_path
-
-
-def mkpath(path: Union[Path, str]) -> None:
-    to_path(path).mkdir(exist_ok=True, parents=True)
 
 
 def add_path_to_environment(path: Union[Path, str]) -> None:

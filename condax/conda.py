@@ -13,7 +13,6 @@ from typing import Iterable, List, Optional, Tuple, Union
 import requests
 
 from condax.config import C
-from condax.paths import mkpath
 from condax.utils import to_path
 import condax.utils as utils
 
@@ -46,7 +45,7 @@ def install_conda_exe():
 
     resp = requests.get(f"{conda_exe_prefix}/{conda_exe_file}", allow_redirects=True)
     resp.raise_for_status()
-    mkpath(C.bin_dir())
+    utils.mkdir(C.bin_dir())
     target_filename = C.bin_dir() / "conda.exe"
     with open(target_filename, "wb") as fo:
         fo.write(resp.content)

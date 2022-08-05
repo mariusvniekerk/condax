@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from typing import List, Optional, Union
-from condax.paths import mkpath
 
 from condax.utils import to_path
 import yaml
