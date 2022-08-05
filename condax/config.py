@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import shutil
 from typing import List, Optional, Union
 
 from condax.utils import to_path
@@ -21,12 +22,14 @@ _default_prefix_dir = _default_prefix_dir_win if os.name == "nt" else _default_p
 DEFAULT_PREFIX_DIR = to_path(os.environ.get("CONDAX_PREFIX_DIR", _default_prefix_dir))
 
 DEFAULT_BIN_DIR = to_path(os.environ.get("CONDAX_BIN_DIR", "~/.local/bin"))
-DEFAULT_CHANNELS = os.environ.get("CONDAX_CHANNELS", "conda-forge  defaults").split()
+DEFAULT_CHANNELS = os.environ.get("CONDAX_CHANNELS", "conda-forge  defaults").strip().split()
 
 CONDA_ENVIRONMENT_FILE = to_path("~/.conda/environments.txt")
 
-MAMBA_ROOT_PREFIX = to_path(
-    os.environ.get("CONDA_PREFIX", os.environ.get("MAMBA_ROOT_PREFIX", "~/micromamba"))
+conda_path = shutil.which("conda")
+MAMBA_ROOT_PREFIX = (
+    to_path(conda_path).parent.parent if conda_path is not None
+    else to_path(os.environ.get("MAMBA_ROOT_PREFIX", "~/micromamba"))
 )
 
 
@@ -56,7 +59,7 @@ class C:
         return C.__conf["channels"]
 
     @staticmethod
-    def _set(name: str, value):
+    def _set(name: str, value) -> None:
         if name in C.__conf:
             C.__conf[name] = value
         else:
