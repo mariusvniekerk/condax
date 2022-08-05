@@ -1,7 +1,9 @@
 import os
 from pathlib import Path
+import platform
 from typing import List, Tuple, Union
 import re
+import urllib.parse
 
 
 pat = re.compile(r"<=|>=|==|!=|<|>|=")
@@ -45,6 +47,11 @@ def to_path(path: Union[str, Path]) -> Path:
     return Path(path).expanduser().resolve()
 
 
+def mkdir(path: Union[Path, str]) -> None:
+    """mkdir -p path"""
+    to_path(path).mkdir(exist_ok=True, parents=True)
+
+
 def quote(path: Union[Path, str]) -> str:
     return f'"{str(path)}"'
 
@@ -57,7 +64,10 @@ def is_executable(path: Path) -> bool:
         return False
 
     if os.name == "nt":
-        pathexts = [ext.strip().lower() for ext in os.environ.get("PATHEXT", "").split(os.pathsep)]
+        pathexts = [
+            ext.strip().lower()
+            for ext in os.environ.get("PATHEXT", "").split(os.pathsep)
+        ]
         ext = path.suffix.lower()
         return ext and (ext in pathexts)
 
@@ -104,3 +114,37 @@ def unlink(path: Path):
     """
     if path.exists():
         path.unlink()
+
+
+def get_micromamba_url() -> str:
+    """
+    Get the URL of the latest micromamba release.
+    """
+    base = "https://micro.mamba.pm/api/micromamba/"
+    if platform.system() == "Linux" and platform.machine() == "x86_64":
+        subdir = "linux-64/latest"
+    elif platform.system() == "Darwin":
+        subdir = "osx-64/latest"
+    else:
+        # TODO: Support windows here
+        raise ValueError(f"Unsupported platform: {platform.system()}")
+
+    url = urllib.parse.urljoin(base, subdir)
+    return url
+
+
+def get_conda_url() -> str:
+    """
+    Get the URL of the latest micromamba release.
+    """
+    base = "https://repo.anaconda.com/pkgs/misc/conda-execs"
+    if platform.system() == "Linux" and platform.machine() == "x86_64":
+        subdir = "conda-latest-linux-64.exe"
+    elif platform.system() == "Darwin":
+        subdir = "conda-latest-osx-64.exe"
+    else:
+        # TODO: Support windows here
+        raise ValueError(f"Unsupported platform: {platform.system()}")
+
+    url = urllib.parse.urljoin(base, subdir)
+    return url

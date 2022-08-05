@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from typing import List, Optional, Union
-from condax.paths import mkpath
 
 from condax.utils import to_path
 import yaml
@@ -26,14 +25,23 @@ DEFAULT_CHANNELS = os.environ.get("CONDAX_CHANNELS", "conda-forge  defaults").sp
 
 CONDA_ENVIRONMENT_FILE = to_path("~/.conda/environments.txt")
 
+MAMBA_ROOT_PREFIX = to_path(
+    os.environ.get("CONDA_PREFIX", os.environ.get("MAMBA_ROOT_PREFIX", "~/micromamba"))
+)
+
 
 # https://stackoverflow.com/questions/6198372/most-pythonic-way-to-provide-global-configuration-variables-in-config-py
 class C:
     __conf = {
+        "mamba_root_prefix": MAMBA_ROOT_PREFIX,
         "prefix_dir": DEFAULT_PREFIX_DIR,
         "bin_dir": DEFAULT_BIN_DIR,
         "channels": DEFAULT_CHANNELS,
     }
+
+    @staticmethod
+    def mamba_root_prefix() -> Path:
+        return C.__conf["mamba_root_prefix"]
 
     @staticmethod
     def prefix_dir() -> Path:

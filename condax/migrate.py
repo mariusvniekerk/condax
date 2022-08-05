@@ -7,7 +7,6 @@ import pathlib
 import shutil
 
 import condax.config as config
-import condax.paths as paths
 import condax.utils as utils
 
 def from_old_version() -> None:
@@ -40,7 +39,7 @@ def move_condax_envs() -> None:
     from_ = pathlib.Path.home() / ".condax"
     if from_.exists() and from_.is_dir():
         to_ = config.C.prefix_dir()
-        paths.mkpath(to_)
+        utils.mkdir(to_)
 
         for subdir in from_.iterdir():
             dst = to_ / subdir.name

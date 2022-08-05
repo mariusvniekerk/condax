@@ -14,25 +14,24 @@ import condax.wrapper as wrapper
 import condax.utils as utils
 import condax.config as config
 from condax.config import C
-from condax.paths import mkpath
 
 
 def create_link(package: str, exe: Path, is_forcing: bool = False):
+    micromamba_exe = conda.ensure_micromamba()
     executable_name = exe.name
     # FIXME: Enforcing conda (not mamba) for `conda run` for now
-    conda_exe = conda.ensure_conda(mamba_ok=False)
     prefix = conda.conda_env_prefix(package)
     if os.name == "nt":
         script_lines = [
             "@rem Entrypoint created by condax\n",
-            f"@call {utils.quote(conda_exe)} run --no-capture-output --prefix {utils.quote(prefix)} {utils.quote(exe)} %*\n",
+            f"@call {utils.quote(micromamba_exe)} run --prefix {utils.quote(prefix)} {utils.quote(exe)} %*\n",
         ]
     else:
         script_lines = [
             "#!/usr/bin/env bash\n",
             "\n",
             "# Entrypoint created by condax\n",
-            f'{conda_exe} run --no-capture-output --prefix {utils.quote(prefix)} {utils.quote(exe)} "$@"\n',
+            f'{utils.quote(micromamba_exe)} run --prefix {utils.quote(prefix)} {utils.quote(exe)} "$@"\n',
         ]
 
     script_path = _get_wrapper_path(executable_name)
@@ -105,7 +104,7 @@ def install_package(
 
     conda.create_conda_environment(package, match_specs=match_specs)
     executables_to_link = conda.determine_executables_from_env(package)
-    mkpath(C.bin_dir())
+    utils.mkdir(C.bin_dir())
     create_links(package, executables_to_link, is_forcing=is_forcing)
     _create_metadata(package)
     print(f"`{package}` has been installed by condax", file=sys.stderr)
@@ -399,7 +398,7 @@ def _get_all_envs() -> List[str]:
     """
     Get all conda envs
     """
-    mkpath(C.prefix_dir())
+    utils.mkdir(C.prefix_dir())
     return sorted([pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()])
 
 
@@ -547,7 +546,7 @@ def _recreate_all_links():
 def _prune_links():
     to_apps = {env: _get_apps(env) for env in _get_all_envs()}
 
-    mkpath(C.bin_dir())
+    utils.mkdir(C.bin_dir())
     links = C.bin_dir().glob("*")
     for link in links:
         if link.is_symlink() and (not link.exists()):
@@ -592,7 +591,7 @@ def fix_links():
     """
     Run the repair lin.
     """
-    mkpath(C.bin_dir())
+    utils.mkdir(C.bin_dir())
 
     print(f"Repairing links in the BIN_DIR: {C.bin_dir()}...")
     _prune_links()
