@@ -4,7 +4,7 @@
 
 `condax` is a package manager exclusively for installing commands. `condax`, built on top of `conda` variants, frees you from activating and deactivating conda environments while keeping programs in separate environments.
 
-`condax` was originally developed by [Marius van Niekerk ](https://github.com/mariusvniekerk/condax). I'm adding features here after the version 0.0.5.
+`condax` was originally developed by [Marius van Niekerk ](https://github.com/mariusvniekerk/condax). More features have been added here after the version 0.0.5.
 
 
 ## Examples
@@ -18,7 +18,7 @@ condax install nodejs
 node --version
 ```
 
-There is no magic about the operation, and you can even do the same without having `condax`; the trick is to use `conda run`. (Or `micromamba run`.)
+There is no magic about the operation, and you can even do the same without having `condax`; the trick is to use `conda run` (or `micromamba run`) which is effectively sandwitching a command with `conda activate` and `conda deactivate`.
 
 ```shell
 # Create an environent `nodejs`.
@@ -28,17 +28,23 @@ mamba env create -c conda-forge -n nodejs nodejs
 micromamba run -n nodejs node --version
 ```
 
-`condax` just creates such scripts above in your path, by default in `~/.local/bin`, and manages them together with conda environments. I guess it's quite convenient when you deal with lots of commands from conda channels. (I'm looking at you, [`bioconda`](https://bioconda.github.io/) users 🤗.)
+`condax` just creates scripts like this, by default in `~/.local/bin`, and manages them together with conda environments. It's simple, yet quite convenient when you deal with many commands from conda channels. (I'm looking at you, [`bioconda`](https://bioconda.github.io/) users 🤗.)
 
 
-## How to install `condax`
+## How to install and setup `condax`
 
 Use `pip` or `pipx` to install directly from this repository.
 
-```
+```shell
 $ pip install git+https://github.com/yamaton/condax
 
 # Or, pipx install git+https://github.com/yamaton/condax if pipx is available.
+```
+
+Then add `~/.local/bin` to your `$PATH` if not done already. This command will modify shell configuration. You may skip this if you manage `$PATH` by yourself.
+
+```shell
+condax ensure-path
 ```
 
 
@@ -69,6 +75,6 @@ $ pip install git+https://github.com/yamaton/condax
 
 This forked version has changed the locations of the environments and the config file. If you have already installed packages with the original `condax`, please run the following, just once, to sort out.
 
-```bash
+```shell
 condax repair --migrate
 ```
