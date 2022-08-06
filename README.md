@@ -2,26 +2,34 @@
 
 ## What is this?
 
-`condax` is a package manager exclusively for installing commands from conda distribution channels. `condax` frees you from activating and deactivating conda environments while keeping programs in separate environments.
+`condax` is a package manager exclusively for installing commands. `condax`, built on top of `conda` variants, frees you from activating and deactivating conda environments while keeping programs in separate environments.
 
 `condax` was originally developed by [Marius van Niekerk ](https://github.com/mariusvniekerk/condax). I'm adding features here after the version 0.0.5.
 
 
 ## Examples
 
-Here is how to install `node`, and execute it.
+Here is how you can install `node`. You can just execute it without activating its associated environment. `node` still lives in its own environment so there is no worry about dependencies.
 
 ```shell
 condax install nodejs
+
+# Then node is ready to run.
 node --version
 ```
 
-This operation is equivalent to the following; `condax` just keeps track of conda environments for commands.
+There is no magic about the operation, and you can even do the same without having `condax`; the trick is to use `conda run`. (Or `micromamba run`.)
 
 ```shell
-conda env create -c conda-forge -n nodejs nodejs
-conda run -n nodejs 'node --version'
+# Create an environent `nodejs`.
+mamba env create -c conda-forge -n nodejs nodejs
+
+# Run `node --verion` within the nodejs environment.
+micromamba run -n nodejs node --version
 ```
+
+`condax` just creates such scripts above in your path, by default in `~/.local/bin`, and manages them together with conda environments. I guess it's quite convenient when you deal with lots of commands from conda channels. (I'm looking at you, [`bioconda`](https://bioconda.github.io/) users 🤗.)
+
 
 ## How to install `condax`
 
@@ -37,13 +45,14 @@ $ pip install git+https://github.com/yamaton/condax
 ## Changes since the original [`condax 0.0.5`](https://github.com/mariusvniekerk/condax/)
 
 - Supports `condax list` to display installed executables.
-- Uses `mamba` internally if available.
+- Uses `mamba` to manipulate environments if available.
+- Uses `micromamba` to run commands.
 - Supports installing a package with version constraints, like `condax install ipython=8.3`.
     - See [package match specifications](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications) for the detail.
 - Supports injecting/uninjecting packages onto/from an existing environment.
 - Supports configuring via environment variables, or by passing a config file.
-- Supports exporting and importing conda environments (only the ones managed by `condax`).
-- Internally, this fork creates scripts calling `conda run` instead of creating symbolic links.
+- Supports exporting and importing condax environments for reproducibility.
+- Internally, this fork creates scripts calling `micromamba run` instead of creating symbolic links.
     - ➡️ Solves [the issue](https://github.com/mariusvniekerk/condax/issues/13) with non-Python packages
 - Follows [XDG Base Directory Specification](https://stackoverflow.com/questions/1024114/location-of-ini-config-files-in-linux-unix) for directory and file locations:
     - Environments are created in `~/.local/share/condax/envs`. (Previously `~/.condax`.)
@@ -53,7 +62,6 @@ $ pip install git+https://github.com/yamaton/condax
 
 ## Known issues
 
-- ``ERROR conda.cli.main_run:execute(49): `conda run XXX` failed (see above for error)`` appears whenever a command returns a nonzero exit code.
 - Support of Windows platform is imperfect, though it should work fine on WSL.
 
 
