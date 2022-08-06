@@ -13,7 +13,7 @@ with open("condax/__init__.py", "r") as f:
             version = line.strip().split("=")[1].strip(" '\"")
             break
     else:
-        version = "0.0.1"
+        version = "0.1.0"
 
 with open("README.md", "r", encoding="utf-8") as f:
     readme = f.read()
@@ -22,7 +22,7 @@ REQUIRES = ["click", "requests", "userpath", "PyYAML"]
 
 setup(
     name="condax",
-    version="0.0.6",
+    version="0.1.0",
     description="Install and run applications packaged with conda in isolated environments",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -34,15 +34,10 @@ setup(
     license="MIT",
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: Implementation :: CPython",
-        "Programming Language :: Python :: Implementation :: PyPy",
+        "Programming Language :: Python :: 3",
     ],
     python_requires=">=3.7",
     install_requires=REQUIRES,
