@@ -137,7 +137,7 @@ def get_conda_url() -> str:
     """
     Get the URL of the latest micromamba release.
     """
-    base = "https://repo.anaconda.com/pkgs/misc/conda-execs"
+    base = "https://repo.anaconda.com/pkgs/misc/conda-execs/"
     if platform.system() == "Linux" and platform.machine() == "x86_64":
         subdir = "conda-latest-linux-64.exe"
     elif platform.system() == "Darwin":
