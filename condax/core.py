@@ -17,22 +17,25 @@ from condax.config import C
 
 
 def create_link(package: str, exe: Path, is_forcing: bool = False):
+    micromamba_exe = conda.ensure_micromamba()
     executable_name = exe.name
     # FIXME: Enforcing conda (not mamba) for `conda run` for now
-    conda_exe = conda.ensure_conda(mamba_ok=False)
     prefix = conda.conda_env_prefix(package)
     if os.name == "nt":
         script_lines = [
             "@rem Entrypoint created by condax\n",
-            f"@call {utils.quote(conda_exe)} run --no-capture-output --prefix {utils.quote(prefix)} {utils.quote(exe)} %*\n",
+            f"@call {utils.quote(micromamba_exe)} run --prefix {utils.quote(prefix)} {utils.quote(exe)} %*\n",
         ]
     else:
         script_lines = [
             "#!/usr/bin/env bash\n",
             "\n",
             "# Entrypoint created by condax\n",
-            f'{conda_exe} run --no-capture-output --prefix {utils.quote(prefix)} {utils.quote(exe)} "$@"\n',
+            f'{utils.quote(micromamba_exe)} run --prefix {utils.quote(prefix)} {utils.quote(exe)} "$@"\n',
         ]
+        if utils.to_bool(os.environ.get("CONDAX_HIDE_EXITCODE", False)):
+            # Let scripts to return exit code 0 constantly
+            script_lines.append("exit 0\n")
 
     script_path = _get_wrapper_path(executable_name)
     if script_path.exists() and not is_forcing:

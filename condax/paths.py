@@ -5,7 +5,6 @@ from typing import Union
 import userpath
 
 
-
 def add_path_to_environment(path: Union[Path, str]) -> None:
     path = str(path)
 

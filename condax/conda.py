@@ -1,13 +1,14 @@
+import io
 import json
 import logging
 import os
-import platform
 import shlex
 import shutil
 import stat
 import subprocess
 from pathlib import Path
 import sys
+import tarfile
 from typing import Iterable, List, Optional, Tuple, Union
 
 import requests
@@ -17,33 +18,31 @@ from condax.utils import to_path
 import condax.utils as utils
 
 
-
-def ensure_conda(mamba_ok=True):
-    execs = ["conda", "conda.exe"]
-    if mamba_ok:
-        execs.insert(0, "mamba")
-        execs.insert(0, "mamba.exe")
-
+def ensure_conda():
+    execs = ["mamba", "conda"]
     for conda_exec in execs:
         conda_path = shutil.which(conda_exec)
         if conda_path is not None:
             return conda_path
 
     logging.info("No existing conda installation found.  Installing the standalone")
-    return install_conda_exe()
+    return setup_conda()
 
 
-def install_conda_exe():
-    conda_exe_prefix = "https://repo.anaconda.com/pkgs/misc/conda-execs"
-    if platform.system() == "Linux":
-        conda_exe_file = "conda-latest-linux-64.exe"
-    elif platform.system() == "Darwin":
-        conda_exe_file = "conda-latest-osx-64.exe"
-    else:
-        # TODO: Support windows here
-        raise ValueError(f"Unsupported platform: {platform.system()}")
+def ensure_micromamba():
+    execs = ["micromamba"]
+    for conda_exec in execs:
+        conda_path = shutil.which(conda_exec)
+        if conda_path is not None:
+            return conda_path
 
-    resp = requests.get(f"{conda_exe_prefix}/{conda_exe_file}", allow_redirects=True)
+    logging.info("No existing conda installation found.  Installing the standalone")
+    return setup_micromamba()
+
+
+def setup_conda():
+    url = utils.get_conda_url()
+    resp = requests.get(url, allow_redirects=True)
     resp.raise_for_status()
     utils.mkdir(C.bin_dir())
     target_filename = C.bin_dir() / "conda.exe"
@@ -52,6 +51,39 @@ def install_conda_exe():
     st = os.stat(target_filename)
     os.chmod(target_filename, st.st_mode | stat.S_IXUSR)
     return target_filename
+
+
+def setup_micromamba() -> Path:
+    utils.mkdir(C.bin_dir())
+    umamba_exe = C.bin_dir() / "micromamba"
+    _download_extract_micromamba(umamba_exe)
+    return umamba_exe
+
+
+def _download_extract_micromamba(umamba_dst: Path):
+    url = utils.get_micromamba_url()
+    print(f"Downloading micromamba from {url}")
+    response = requests.get(url, allow_redirects=True)
+    response.raise_for_status()
+
+    utils.mkdir(umamba_dst.parent)
+    tarfile_obj = io.BytesIO(response.content)
+    with tarfile.open(fileobj=tarfile_obj) as tar, open(umamba_dst, "wb") as f:
+        extracted = tar.extractfile("bin/micromamba")
+        if extracted:
+            shutil.copyfileobj(extracted, f)
+
+    st = os.stat(umamba_dst)
+    os.chmod(umamba_dst, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+
+## Need to activate if using micromamba as drop-in replacement
+# def _activate_umamba(umamba_path: Path) -> None:
+#     print("Activating micromamba")
+#     _subprocess_run(
+#         f'eval "$({umamba_path} shell hook --shell posix --prefix {C.mamba_root_prefix()})"',
+#         shell=True,
+#     )
 
 
 def create_conda_environment(package: str, match_specs=""):
@@ -250,7 +282,7 @@ def get_dependencies(package: str) -> List[str]:
 
 
 def _subprocess_run(
-    args: List[Union[str, Path]], **kwargs
+    args: Union[str, List[Union[str, Path]]], **kwargs
 ) -> subprocess.CompletedProcess:
     """
     Run a subprocess and return the CompletedProcess object.

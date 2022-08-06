@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional, List, Union
 
 from condax.utils import to_path
-import condax.config as config
+
 
 def read_env_name(script_path: Union[str, Path]) -> Optional[str]:
     """
@@ -84,7 +84,7 @@ class Parser(object):
     """
 
     p = argparse.ArgumentParser()
-    p.add_argument("--prefix", type=pathlib.Path)
+    p.add_argument("-p", "--prefix", type=pathlib.Path)
     p.add_argument("--no-capture-output", action="store_true")
     p.add_argument("exec_path", type=pathlib.Path)
     p.add_argument("args")
@@ -108,7 +108,7 @@ class Parser(object):
 
         first_word = words[0]
         cmd = to_path(first_word).stem
-        if cmd not in ("conda", "mamba"):
+        if cmd not in ("conda", "mamba", "micromamba"):
             return None
 
         if words[1] != "run":

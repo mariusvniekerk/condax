@@ -5,6 +5,7 @@ from typing import List, Optional
 import click
 
 import condax.config as config
+import condax.conda as conda
 import condax.core as core
 import condax.paths as paths
 import condax.migrate as migrate
@@ -266,8 +267,8 @@ def repair(is_migrating):
     if is_migrating:
         migrate.from_old_version()
     core.fix_links()
+    conda.ensure_micromamba()
 
 
 if __name__ == "__main__":
     cli()
-

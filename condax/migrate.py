@@ -7,7 +7,6 @@ import pathlib
 import shutil
 
 import condax.config as config
-import condax.paths as paths
 import condax.utils as utils
 
 def from_old_version() -> None:
