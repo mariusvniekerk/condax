@@ -9,6 +9,7 @@ import condax.conda as conda
 import condax.core as core
 import condax.paths as paths
 import condax.migrate as migrate
+from condax import __version__
 
 
 option_config = click.option(
@@ -56,6 +57,10 @@ option_is_forcing = click.option(
       Conda environment location is {config.DEFAULT_PREFIX_DIR}\n
       Links to apps are placed in {config.DEFAULT_BIN_DIR}
     """
+)
+@click.version_option(
+    __version__,
+    message="%(prog)s %(version)s",
 )
 @option_config
 def cli(config_file: Optional[Path]):
