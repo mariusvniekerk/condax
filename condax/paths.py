@@ -13,6 +13,10 @@ def add_path_to_environment(path: Union[Path, str]) -> None:
         " to take effect."
     )
     if userpath.in_current_path(path):
+        print(
+            f"{path} has already been added to PATH.",
+            file=sys.stderr,
+        )
         return
 
     if userpath.need_shell_restart(path):
