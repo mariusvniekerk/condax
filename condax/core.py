@@ -323,7 +323,7 @@ def _print_condax_dirs() -> None:
     print()
 
 
-def update_package(env: str, is_forcing: bool = False):
+def update_package(env: str, is_forcing: bool = False) -> None:
 
     exit_if_not_installed(env)
     try:
@@ -338,6 +338,12 @@ def update_package(env: str, is_forcing: bool = False):
             injected: set(conda.determine_executables_from_env(env, injected))
             for injected in _get_injected_packages(env)
         }
+
+        if (
+            main_apps_before_update == main_apps_after_update
+            and injected_apps_before_update == injected_apps_after_update
+        ):
+            print(f"No updates found: {env}")
 
         to_create = main_apps_after_update - main_apps_before_update
         to_delete = main_apps_before_update - main_apps_after_update
