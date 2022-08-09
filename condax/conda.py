@@ -30,9 +30,6 @@ def ensure_conda() -> Path:
 
 
 def ensure_micromamba() -> Path:
-    if os.name == "nt":
-        return ensure_conda()
-
     execs = ["micromamba"]
     for conda_exec in execs:
         conda_path = shutil.which(conda_exec)
