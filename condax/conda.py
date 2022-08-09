@@ -45,7 +45,8 @@ def setup_conda() -> Path:
     resp = requests.get(url, allow_redirects=True)
     resp.raise_for_status()
     utils.mkdir(C.bin_dir())
-    target_filename = C.bin_dir() / "conda.exe"
+    exe_name = "conda.exe" if os.name == "nt" else "conda"
+    target_filename = C.bin_dir() / exe_name
     with open(target_filename, "wb") as fo:
         fo.write(resp.content)
     st = os.stat(target_filename)
@@ -55,7 +56,8 @@ def setup_conda() -> Path:
 
 def setup_micromamba() -> Path:
     utils.mkdir(C.bin_dir())
-    umamba_exe = C.bin_dir() / "micromamba"
+    exe_name = "micromamba.exe" if os.name == "nt" else "micromamba"
+    umamba_exe = C.bin_dir() / exe_name
     _download_extract_micromamba(umamba_exe)
     return umamba_exe
 
@@ -69,7 +71,8 @@ def _download_extract_micromamba(umamba_dst: Path):
     utils.mkdir(umamba_dst.parent)
     tarfile_obj = io.BytesIO(response.content)
     with tarfile.open(fileobj=tarfile_obj) as tar, open(umamba_dst, "wb") as f:
-        extracted = tar.extractfile("bin/micromamba")
+        p = "Library/bin/micromamba.exe" if os.name == "nt" else "bin/micromamba"
+        extracted = tar.extractfile(p)
         if extracted:
             shutil.copyfileobj(extracted, f)
 

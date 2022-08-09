@@ -125,9 +125,10 @@ def get_micromamba_url() -> str:
         subdir = "linux-64/latest"
     elif platform.system() == "Darwin":
         subdir = "osx-64/latest"
+    elif platform.system() == "Windows" and platform.machine() in ("AMD64", "x86_64"):
+        subdir = "win-64/latest"
     else:
-        # TODO: Support windows here
-        raise ValueError(f"Unsupported platform: {platform.system()}")
+        raise ValueError(f"Unsupported platform: {platform.system()} {platform.machine()}")
 
     url = urllib.parse.urljoin(base, subdir)
     return url
@@ -142,9 +143,10 @@ def get_conda_url() -> str:
         subdir = "conda-latest-linux-64.exe"
     elif platform.system() == "Darwin":
         subdir = "conda-latest-osx-64.exe"
+    elif platform.system() == "Windows" and platform.machine() in ("AMD64", "x86_64"):
+        subdir = "conda-latest-win-64.exe"
     else:
-        # TODO: Support windows here
-        raise ValueError(f"Unsupported platform: {platform.system()}")
+        raise ValueError(f"Unsupported platform: {platform.system()} {platform.machine()}")
 
     url = urllib.parse.urljoin(base, subdir)
     return url
