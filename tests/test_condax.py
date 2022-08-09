@@ -113,13 +113,20 @@ def test_inject_then_uninject():
 
     base = "ipython"
     injected = "numpy"
-    injected_version = "1.22.4"   # older then the latest one
+    injected_version = "1.22.4"  # older then the latest one
     injected_spec = f"{injected}={injected_version}"
     python_version = "3.9"
 
     exe_path = bin_dir / base
     env_path = prefix_dir / base
-    injected_pkg_lib_path = prefix_dir / base / "lib" / f"python{python_version}" / "site-packages" / injected
+    injected_pkg_lib_path = (
+        prefix_dir
+        / base
+        / "lib"
+        / f"python{python_version}"
+        / "site-packages"
+        / injected
+    )
 
     # None of the executable, environment, and injected package should exist
     assert not exe_path.exists()
@@ -133,7 +140,9 @@ def test_inject_then_uninject():
     assert not injected_pkg_lib_path.exists()
 
     # Make sure ipython throws error when importing numpy
-    res = subprocess.run(f"{exe_path} -c 'import numpy'", shell=True, capture_output=True)
+    res = subprocess.run(
+        f"{exe_path} -c 'import numpy'", shell=True, capture_output=True
+    )
     assert res.returncode == 1
     assert "ModuleNotFoundError" in res.stdout.decode()
 
@@ -145,7 +154,11 @@ def test_inject_then_uninject():
     assert injected_pkg_lib_path.exists() and injected_pkg_lib_path.is_dir()
 
     # ipython should be able to import numpy, and display the correct numpy version
-    res = subprocess.run(f"{exe_path} -c 'import numpy; print(numpy.__version__)'", shell=True, capture_output=True)
+    res = subprocess.run(
+        f"{exe_path} -c 'import numpy; print(numpy.__version__)'",
+        shell=True,
+        capture_output=True,
+    )
     assert res.returncode == 0
     assert res.stdout and (injected_version in res.stdout.decode())
 
@@ -156,7 +169,9 @@ def test_inject_then_uninject():
     assert not injected_pkg_lib_path.exists()
 
     # Make sure ipython throws error when importing numpy ... again
-    res = subprocess.run(f"{exe_path} -c 'import numpy'", shell=True, capture_output=True)
+    res = subprocess.run(
+        f"{exe_path} -c 'import numpy'", shell=True, capture_output=True
+    )
     assert res.returncode == 1
     assert "ModuleNotFoundError" in res.stdout.decode()
 
@@ -172,7 +187,12 @@ def test_inject_with_include_apps():
     """
     Test injecting a library to an existing environment with executable, then uninject it.
     """
-    from condax.core import install_package, inject_package_to, uninject_package_from, remove_package
+    from condax.core import (
+        install_package,
+        inject_package_to,
+        uninject_package_from,
+        remove_package,
+    )
     import condax.config as config
     from condax.utils import to_path
 
@@ -237,7 +257,9 @@ def test_inject_with_include_apps():
     assert exe_xsv.exists() and exe_xsv.is_file()
 
     # Check ripgrep is gone from conda-meta
-    injected_ripgrep_conda_meta = next(conda_meta_dir.glob(f"{injected_rg_name}-{injected_rg_version}-*.json"), None)
+    injected_ripgrep_conda_meta = next(
+        conda_meta_dir.glob(f"{injected_rg_name}-{injected_rg_version}-*.json"), None
+    )
     assert injected_ripgrep_conda_meta is None
 
     # Check xsv still exists in conda-meta

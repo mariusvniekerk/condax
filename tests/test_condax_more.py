@@ -8,8 +8,11 @@ def test_export_import():
     see if environments are recovered by importing files.
     """
     from condax.core import (
-        install_package, inject_package_to, remove_package,
-        export_all_environments, import_environments
+        install_package,
+        inject_package_to,
+        remove_package,
+        export_all_environments,
+        import_environments,
     )
     import condax.config as config
     from condax.utils import to_path

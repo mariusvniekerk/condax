@@ -225,7 +225,9 @@ def determine_executables_from_env(
                 ]
                 break
     else:
-        raise ValueError(f"Could not determine package files: {package} - {injected_package}")
+        raise ValueError(
+            f"Could not determine package files: {package} - {injected_package}"
+        )
 
     executables = set()
     for fn in potential_executables:

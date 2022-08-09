@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from condax.config import C
 
+
 class _PackageBase(object):
     def __init__(self, name: str, apps: List[str], include_apps: bool):
         self.name = name

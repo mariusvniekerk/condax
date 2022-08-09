@@ -33,7 +33,6 @@ def read_env_name(script_path: Union[str, Path]) -> Optional[str]:
         logging.warning(f"Failed in file opening and parsing: {path}")
         return None
 
-
     if namespace is None:
         logging.warning(f"Failed to parse: `{script_name}`:  {path}")
         return None
@@ -64,7 +63,7 @@ def is_wrapper(exec_path: Union[str, Path]) -> bool:
         return False
 
     try:
-        with open(path, "r", encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             content = f.read()
     except UnicodeDecodeError:
         return False

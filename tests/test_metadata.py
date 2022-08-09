@@ -7,7 +7,8 @@ def test_metadata_to_json():
     injected = [InjectedPackage("ripgrep", apps=["rg"], include_apps=False)]
     metadata = CondaxMetaData(main, injected)
 
-    expected = textwrap.dedent("""
+    expected = textwrap.dedent(
+        """
     {
         "injected_packages": [
             {
@@ -26,6 +27,7 @@ def test_metadata_to_json():
             "name": "jq"
         }
     }
-    """).strip()
+    """
+    ).strip()
 
     assert expected == metadata.to_json()

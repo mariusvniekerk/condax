@@ -132,7 +132,6 @@ def inject_package_to(
     # package match specifications
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
 
-
     conda.inject_to_conda_env(
         injected_specs,
         env_name,
@@ -181,14 +180,14 @@ def uninject_package_from(env_name: str, packages_to_uninject: List[str]):
     packages_to_uninject = sorted(found)
     conda.uninject_from_conda_env(packages_to_uninject, env_name)
 
-    injected_app_names = [app for pkg in packages_to_uninject for app in _get_injected_apps(env_name, pkg)]
+    injected_app_names = [
+        app for pkg in packages_to_uninject for app in _get_injected_apps(env_name, pkg)
+    ]
     remove_links(env_name, injected_app_names)
     _uninject_from_metadata(env_name, packages_to_uninject)
 
     pkgs_str = " and ".join(packages_to_uninject)
-    print(
-        f"`{pkgs_str}` has been uninjected from `{env_name}`", file=sys.stderr
-    )
+    print(f"`{pkgs_str}` has been uninjected from `{env_name}`", file=sys.stderr)
 
 
 def exit_if_not_installed(package: str):
@@ -354,12 +353,16 @@ def update_package(env: str, is_forcing: bool = False) -> None:
         remove_links(env, to_delete_apps)
 
         # Update links of injected apps
-        for pkg in  _get_injected_packages(env):
-            to_delete = injected_apps_before_update[pkg] - injected_apps_after_update[pkg]
+        for pkg in _get_injected_packages(env):
+            to_delete = (
+                injected_apps_before_update[pkg] - injected_apps_after_update[pkg]
+            )
             to_delete_apps = [p.name for p in to_delete]
             remove_links(env, to_delete_apps)
 
-            to_create = injected_apps_after_update[pkg] - injected_apps_before_update[pkg]
+            to_create = (
+                injected_apps_after_update[pkg] - injected_apps_before_update[pkg]
+            )
             create_links(env, to_create, is_forcing)
 
         print(f"{env} update successfully")
@@ -373,7 +376,7 @@ def update_package(env: str, is_forcing: bool = False) -> None:
 
     # Update metadata file
     _create_metadata(env)
-    for pkg in  _get_injected_packages(env):
+    for pkg in _get_injected_packages(env):
         _inject_to_metadata(env, pkg)
 
 
@@ -399,18 +402,17 @@ def _load_metadata(env: str) -> metadata.CondaxMetaData:
     return meta
 
 
-def _inject_to_metadata(env: str, packages_to_inject: Iterable[str], include_apps: bool = False):
+def _inject_to_metadata(
+    env: str, packages_to_inject: Iterable[str], include_apps: bool = False
+):
     """
     Inject the package into the condax_metadata.json file for the env.
     """
     meta = _load_metadata(env)
     for pkg in packages_to_inject:
-        apps = [
-            p.name for p in
-            conda.determine_executables_from_env(env, pkg)
-        ]
+        apps = [p.name for p in conda.determine_executables_from_env(env, pkg)]
         pkg_to_inject = metadata.InjectedPackage(pkg, apps, include_apps=include_apps)
-        meta.uninject(pkg)    # overwrites if necessary
+        meta.uninject(pkg)  # overwrites if necessary
         meta.inject(pkg_to_inject)
     meta.save()
 
@@ -430,10 +432,13 @@ def _get_all_envs() -> List[str]:
     Get all conda envs
     """
     utils.mkdir(C.prefix_dir())
-    return sorted([
-        pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()
-        if (pkg_dir / "conda-meta" / "history").exists()
-    ])
+    return sorted(
+        [
+            pkg_dir.name
+            for pkg_dir in C.prefix_dir().iterdir()
+            if (pkg_dir / "conda-meta" / "history").exists()
+        ]
+    )
 
 
 def _get_injected_packages(env_name: str) -> List[str]:
@@ -451,7 +456,12 @@ def _get_injected_apps(env_name: str, injected_name: str) -> List[str]:
     [NOTE] Get a non-empty list only if "include_apps" is True in the metadata.
     """
     meta = _load_metadata(env_name)
-    result = [app for p in meta.injected_packages if p.name == injected_name and p.include_apps for app in p.apps]
+    result = [
+        app
+        for p in meta.injected_packages
+        if p.name == injected_name and p.include_apps
+        for app in p.apps
+    ]
     return result
 
 
@@ -476,7 +486,9 @@ def _get_apps(env_name: str) -> List[str]:
     Return a list of all apps
     """
     meta = _load_metadata(env_name)
-    return meta.main_package.apps + [app for p in meta.injected_packages if p.include_apps for app in p.apps]
+    return meta.main_package.apps + [
+        app for p in meta.injected_packages if p.include_apps for app in p.apps
+    ]
 
 
 def _get_wrapper_path(cmd_name: str) -> Path:
@@ -487,8 +499,7 @@ def _get_wrapper_path(cmd_name: str) -> Path:
 
 
 def export_all_environments(out_dir: str) -> None:
-    """Export all environments to a directory.
-    """
+    """Export all environments to a directory."""
     p = Path(out_dir)
     p.mkdir(parents=True, exist_ok=True)
     print("Started exporting all environments to", p)
@@ -502,16 +513,14 @@ def export_all_environments(out_dir: str) -> None:
 
 
 def _copy_metadata(env: str, p: Path):
-    """Copy the condax_metadata.json file to the exported directory.
-    """
+    """Copy the condax_metadata.json file to the exported directory."""
     _from = metadata.CondaxMetaData.get_path(env)
     _to = p / f"{env}.json"
     shutil.copyfile(_from, _to, follow_symlinks=True)
 
 
 def _overwrite_metadata(envfile: Path):
-    """Copy the condax_metadata.json file to the exported directory.
-    """
+    """Copy the condax_metadata.json file to the exported directory."""
     env = envfile.stem
     _from = envfile
     _to = metadata.CondaxMetaData.get_path(env)
@@ -521,8 +530,7 @@ def _overwrite_metadata(envfile: Path):
 
 
 def import_environments(in_dir: str, is_forcing: bool) -> None:
-    """Import all environments from a directory.
-    """
+    """Import all environments from a directory."""
     p = Path(in_dir)
     print("Started importing environments in", p)
     for envfile in p.glob("*.yml"):
@@ -602,8 +610,7 @@ def _prune_links():
 
 
 def _add_to_conda_env_list() -> None:
-    """Add condax environment prefixes to ~/.conda/environments.txt if not already there.
-    """
+    """Add condax environment prefixes to ~/.conda/environments.txt if not already there."""
     envs = _get_all_envs()
     prefixe_str_set = {str(conda.conda_env_prefix(env)) for env in envs}
     lines = set()

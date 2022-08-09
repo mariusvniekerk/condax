@@ -86,7 +86,7 @@ def install(
     packages: List[str],
     config_file: Optional[Path],
     channels: List[str],
-    is_forcing: bool
+    is_forcing: bool,
 ):
     if config_file:
         config.set_via_file(config_file)
@@ -140,10 +140,7 @@ def uninstall(packages: List[str]):
     help="Show packages injected into the main app's environment.",
 )
 def list(short: bool, include_injected: bool):
-    core.list_all_packages(
-        short=short,
-        include_injected=include_injected
-    )
+    core.list_all_packages(short=short, include_injected=include_injected)
 
 
 @cli.command(
@@ -166,16 +163,13 @@ def inject(
     envname: str,
     channels: List[str],
     is_forcing: bool,
-    include_apps: bool
+    include_apps: bool,
 ):
     if channels:
         config.set_via_value(channels=channels)
 
     core.inject_package_to(
-        envname,
-        packages,
-        is_forcing=is_forcing,
-        include_apps=include_apps
+        envname, packages, is_forcing=is_forcing, include_apps=include_apps
     )
 
 
@@ -242,7 +236,7 @@ def export(dir: str):
     "import",
     help="""
     [experimental] Import condax environments.
-    """
+    """,
 )
 @option_is_forcing
 @click.argument(

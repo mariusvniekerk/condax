@@ -6,10 +6,7 @@ def test_fix_links():
     """
     Test if fix_links() recovers the links correctly.
     """
-    from condax.core import (
-        install_package, inject_package_to,
-        fix_links
-    )
+    from condax.core import install_package, inject_package_to, fix_links
     import condax.config as config
     from condax.utils import to_path
 
@@ -97,7 +94,6 @@ def test_fix_links():
     bin_fp.cleanup()
 
 
-
 def test_fix_links_without_metadata():
     """
     When metadata file (condax_metadata.json) is absent,
@@ -105,7 +101,8 @@ def test_fix_links_without_metadata():
     but not the injected packages.
     """
     from condax.core import (
-        install_package, inject_package_to,
+        install_package,
+        inject_package_to,
         fix_links,
     )
     import condax.config as config

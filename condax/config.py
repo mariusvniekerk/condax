@@ -11,24 +11,31 @@ _localappdata_dir = os.environ.get("LOCALAPPDATA", "~\\AppData\\Local")
 
 _xdg_config_home = os.environ.get("XDG_CONFIG_HOME", "~/.config")
 _default_config_unix = os.path.join(_xdg_config_home, "condax", _config_filename)
-_default_config_windows = os.path.join(_localappdata_dir, "condax", "condax", _config_filename)
+_default_config_windows = os.path.join(
+    _localappdata_dir, "condax", "condax", _config_filename
+)
 _default_config = _default_config_windows if os.name == "nt" else _default_config_unix
 DEFAULT_CONFIG = to_path(os.environ.get("CONDAX_CONFIG", _default_config))
 
 _xdg_data_home = os.environ.get("XDG_DATA_HOME", "~/.local/share")
 _default_prefix_dir_unix = os.path.join(_xdg_data_home, "condax", "envs")
 _default_prefix_dir_win = os.path.join(_localappdata_dir, "condax", "condax", "envs")
-_default_prefix_dir = _default_prefix_dir_win if os.name == "nt" else _default_prefix_dir_unix
+_default_prefix_dir = (
+    _default_prefix_dir_win if os.name == "nt" else _default_prefix_dir_unix
+)
 DEFAULT_PREFIX_DIR = to_path(os.environ.get("CONDAX_PREFIX_DIR", _default_prefix_dir))
 
 DEFAULT_BIN_DIR = to_path(os.environ.get("CONDAX_BIN_DIR", "~/.local/bin"))
-DEFAULT_CHANNELS = os.environ.get("CONDAX_CHANNELS", "conda-forge  defaults").strip().split()
+DEFAULT_CHANNELS = (
+    os.environ.get("CONDAX_CHANNELS", "conda-forge  defaults").strip().split()
+)
 
 CONDA_ENVIRONMENT_FILE = to_path("~/.conda/environments.txt")
 
 conda_path = shutil.which("conda")
 MAMBA_ROOT_PREFIX = (
-    to_path(conda_path).parent.parent if conda_path is not None
+    to_path(conda_path).parent.parent
+    if conda_path is not None
     else to_path(os.environ.get("MAMBA_ROOT_PREFIX", "~/micromamba"))
 )
 
