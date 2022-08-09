@@ -158,12 +158,37 @@ def remove_conda_env(package: str):
 def update_conda_env(spec: str, update_specs: bool):
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(spec)
+    channels_args = [x for c in C.channels() for x in ["--channel", c]]
+
     if update_specs:
         _subprocess_run(
-            [conda_exe, "update", "--prefix", prefix, "--update_specs", "--yes", spec]
+            [
+                conda_exe,
+                "update",
+                "--prefix",
+                prefix,
+                "--override-channels",
+                *channels_args,
+                "--update-specs",
+                "--quiet",
+                "--yes",
+                shlex.quote(spec),
+            ]
         )
     else:
-        _subprocess_run([conda_exe, "update", "--prefix", prefix, "--all", "--yes"])
+        _subprocess_run(
+            [
+                conda_exe,
+                "update",
+                "--prefix",
+                prefix,
+                "--override-channels",
+                *channels_args,
+                "--all",
+                "--quiet",
+                "--yes",
+            ]
+        )
 
 
 def has_conda_env(package: str) -> bool:
