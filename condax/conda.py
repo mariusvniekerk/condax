@@ -18,29 +18,29 @@ from condax.utils import to_path
 import condax.utils as utils
 
 
-def ensure_conda():
+def ensure_conda() -> Path:
     execs = ["mamba", "conda"]
     for conda_exec in execs:
         conda_path = shutil.which(conda_exec)
         if conda_path is not None:
-            return conda_path
+            return to_path(conda_path)
 
     logging.info("No existing conda installation found.  Installing the standalone")
     return setup_conda()
 
 
-def ensure_micromamba():
+def ensure_micromamba() -> Path:
     execs = ["micromamba"]
     for conda_exec in execs:
         conda_path = shutil.which(conda_exec)
         if conda_path is not None:
-            return conda_path
+            return to_path(conda_path)
 
     logging.info("No existing conda installation found.  Installing the standalone")
     return setup_micromamba()
 
 
-def setup_conda():
+def setup_conda() -> Path:
     url = utils.get_conda_url()
     resp = requests.get(url, allow_redirects=True)
     resp.raise_for_status()
@@ -156,39 +156,55 @@ def remove_conda_env(package: str):
 
 
 def update_conda_env(spec: str, update_specs: bool):
+    _, match_spec = utils.split_match_specs(spec)
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(spec)
     channels_args = [x for c in C.channels() for x in ["--channel", c]]
+    update_specs_args = ["--update-specs"] if update_specs else []
 
-    if update_specs:
-        _subprocess_run(
-            [
+    # NOTE: `conda update` does not support version specification.
+    # It suggets to use `conda install` instead.
+    if conda_exe.name == "conda" and match_spec:
+        command = [
                 conda_exe,
-                "update",
+                "install",
                 "--prefix",
                 prefix,
                 "--override-channels",
                 *channels_args,
-                "--update-specs",
                 "--quiet",
                 "--yes",
                 shlex.quote(spec),
             ]
-        )
-    else:
-        _subprocess_run(
-            [
+    elif match_spec:
+        command = [
                 conda_exe,
                 "update",
                 "--prefix",
                 prefix,
                 "--override-channels",
                 *channels_args,
-                "--all",
+                *update_specs_args,
                 "--quiet",
                 "--yes",
+                shlex.quote(spec),
             ]
-        )
+    else:
+        ## FIXME: this update process is inflexible
+        command = [
+                conda_exe,
+                "update",
+                "--prefix",
+                prefix,
+                "--override-channels",
+                *channels_args,
+                *update_specs_args,
+                "--quiet",
+                "--yes",
+                "--all",
+            ]
+
+    _subprocess_run(command)
 
 
 def has_conda_env(package: str) -> bool:
