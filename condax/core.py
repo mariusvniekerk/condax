@@ -402,7 +402,10 @@ def _get_all_envs() -> List[str]:
     Get all conda envs
     """
     utils.mkdir(C.prefix_dir())
-    return sorted([pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()])
+    return sorted([
+        pkg_dir.name for pkg_dir in C.prefix_dir().iterdir()
+        if (pkg_dir / "conda-meta" / "history").exists()
+    ])
 
 
 def _get_injected_packages(env_name: str) -> List[str]:
