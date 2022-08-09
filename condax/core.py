@@ -88,12 +88,12 @@ def remove_links(package: str, app_names_to_unlink: Iterable[str]):
 
 
 def install_package(
-    package: str,
+    spec: str,
     is_forcing: bool = False,
 ):
     # package match specifications
     # https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications
-    package, match_specs = utils.split_match_specs(package)
+    package, match_specs = utils.split_match_specs(spec)
 
     if conda.has_conda_env(package):
         if is_forcing:
@@ -105,7 +105,7 @@ def install_package(
             )
             sys.exit(1)
 
-    conda.create_conda_environment(package, match_specs=match_specs)
+    conda.create_conda_environment(spec)
     executables_to_link = conda.determine_executables_from_env(package)
     utils.mkdir(C.bin_dir())
     create_links(package, executables_to_link, is_forcing=is_forcing)
@@ -205,9 +205,9 @@ def remove_package(package: str):
     print(f"`{package}` has been removed from condax", file=sys.stderr)
 
 
-def update_all_packages(is_forcing: bool = False):
+def update_all_packages(update_specs: bool = False, is_forcing: bool = False):
     for package in _get_all_envs():
-        update_package(package, is_forcing=is_forcing)
+        update_package(package, update_specs=update_specs, is_forcing=is_forcing)
 
 
 def list_all_packages(short=False, include_injected=False) -> None:
@@ -322,8 +322,9 @@ def _print_condax_dirs() -> None:
     print()
 
 
-def update_package(env: str, is_forcing: bool = False) -> None:
+def update_package(spec: str, update_specs: bool = False, is_forcing: bool = False) -> None:
 
+    env, _ = utils.split_match_specs(spec)
     exit_if_not_installed(env)
     try:
         main_apps_before_update = set(conda.determine_executables_from_env(env))
@@ -331,7 +332,7 @@ def update_package(env: str, is_forcing: bool = False) -> None:
             injected: set(conda.determine_executables_from_env(env, injected))
             for injected in _get_injected_packages(env)
         }
-        conda.update_conda_env(env)
+        conda.update_conda_env(spec, update_specs)
         main_apps_after_update = set(conda.determine_executables_from_env(env))
         injected_apps_after_update = {
             injected: set(conda.determine_executables_from_env(env, injected))

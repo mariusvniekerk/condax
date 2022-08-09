@@ -204,16 +204,19 @@ def ensure_path(config_file: Optional[Path]):
     """
 )
 @click.option(
-    "--all", is_flag=True, help="Set to update all packages installed by condax"
+    "--all", is_flag=True, help="Set to update all packages installed by condax."
+)
+@click.option(
+    "--update-specs", is_flag=True, help="Update based on provided specifications."
 )
 @click.argument("packages", required=False, nargs=-1)
 @click.pass_context
-def update(ctx: click.Context, all: bool, packages: List[str]):
+def update(ctx: click.Context, all: bool, packages: List[str], update_specs: bool):
     if all:
-        core.update_all_packages()
+        core.update_all_packages(update_specs)
     elif packages:
         for pkg in packages:
-            core.update_package(pkg)
+            core.update_package(pkg, update_specs)
     else:
         print(ctx.get_help(), file=sys.stderr)
 

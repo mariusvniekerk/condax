@@ -86,9 +86,9 @@ def _download_extract_micromamba(umamba_dst: Path):
 #     )
 
 
-def create_conda_environment(package: str, match_specs=""):
+def create_conda_environment(spec: str):
     conda_exe = ensure_conda()
-    prefix = conda_env_prefix(package)
+    prefix = conda_env_prefix(spec)
 
     channels = C.channels()
     channels_args = [x for c in channels for x in ["--channel", c]]
@@ -103,7 +103,7 @@ def create_conda_environment(package: str, match_specs=""):
             *channels_args,
             "--quiet",
             "--yes",
-            shlex.quote(package + match_specs),
+            shlex.quote(spec),
         ]
     )
 
@@ -155,12 +155,15 @@ def remove_conda_env(package: str):
     )
 
 
-def update_conda_env(package: str):
+def update_conda_env(spec: str, update_specs: bool):
     conda_exe = ensure_conda()
-
-    _subprocess_run(
-        [conda_exe, "update", "--prefix", conda_env_prefix(package), "--all", "--yes"]
-    )
+    prefix = conda_env_prefix(spec)
+    if update_specs:
+        _subprocess_run(
+            [conda_exe, "update", "--prefix", prefix, "--update_specs", "--yes", spec]
+        )
+    else:
+        _subprocess_run([conda_exe, "update", "--prefix", prefix, "--all", "--yes"])
 
 
 def has_conda_env(package: str) -> bool:
@@ -169,11 +172,12 @@ def has_conda_env(package: str) -> bool:
     return p.exists() and p.is_dir()
 
 
-def conda_env_prefix(package: str) -> Path:
+def conda_env_prefix(spec: str) -> Path:
+    package, _ = utils.split_match_specs(spec)
     return C.prefix_dir() / package
 
 
-def get_package_info(package, specific_name=None) -> Tuple[str, str, str]:
+def get_package_info(package: str, specific_name=None) -> Tuple[str, str, str]:
     env_prefix = conda_env_prefix(package)
     package_name = package if specific_name is None else specific_name
     conda_meta_dir = env_prefix / "conda-meta"
