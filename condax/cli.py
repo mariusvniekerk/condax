@@ -268,8 +268,8 @@ def run_import(directory: str, is_forcing: bool):
 def repair(is_migrating):
     if is_migrating:
         migrate.from_old_version()
+    conda.setup_micromamba()
     core.fix_links()
-    conda.ensure_micromamba()
 
 
 if __name__ == "__main__":
