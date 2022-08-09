@@ -437,7 +437,7 @@ def _get_all_envs() -> List[str]:
         [
             pkg_dir.name
             for pkg_dir in C.prefix_dir().iterdir()
-            if (pkg_dir / "conda-meta" / "history").exists()
+            if utils.is_env_dir(pkg_dir)
         ]
     )
 

@@ -167,3 +167,9 @@ def to_bool(value: Union[str, bool]) -> bool:
         pass
 
     return False
+
+
+def is_env_dir(path: Union[Path, str]) -> bool:
+    """Check if a path is a conda environment directory."""
+    p = to_path(path)
+    return (p / "conda-meta" / "history").exists()
