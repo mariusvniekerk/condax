@@ -323,30 +323,52 @@ def _print_condax_dirs() -> None:
     print()
 
 
-def update_package(package: str, is_forcing: bool = False):
+def update_package(env: str, is_forcing: bool = False):
 
-    exit_if_not_installed(package)
+    exit_if_not_installed(env)
     try:
-        executables_already_linked = set(conda.determine_executables_from_env(package))
-        conda.update_conda_env(package)
-        executables_linked_in_updated = set(
-            conda.determine_executables_from_env(package)
-        )
+        main_apps_before_update = set(conda.determine_executables_from_env(env))
+        injected_apps_before_update = {
+            injected: set(conda.determine_executables_from_env(env, injected))
+            for injected in _get_injected_packages(env)
+        }
+        conda.update_conda_env(env)
+        main_apps_after_update = set(conda.determine_executables_from_env(env))
+        injected_apps_after_update = {
+            injected: set(conda.determine_executables_from_env(env, injected))
+            for injected in _get_injected_packages(env)
+        }
 
-        to_create = executables_linked_in_updated - executables_already_linked
-        to_delete = executables_already_linked - executables_linked_in_updated
+        to_create = main_apps_after_update - main_apps_before_update
+        to_delete = main_apps_before_update - main_apps_after_update
         to_delete_apps = [path.name for path in to_delete]
 
-        create_links(package, to_create, is_forcing)
-        remove_links(package, to_delete_apps)
-        print(f"{package} update successfully")
+        # Update links of main apps
+        create_links(env, to_create, is_forcing)
+        remove_links(env, to_delete_apps)
+
+        # Update links of injected apps
+        for pkg in  _get_injected_packages(env):
+            to_delete = injected_apps_before_update[pkg] - injected_apps_after_update[pkg]
+            to_delete_apps = [p.name for p in to_delete]
+            remove_links(env, to_delete_apps)
+
+            to_create = injected_apps_after_update[pkg] - injected_apps_before_update[pkg]
+            create_links(env, to_create, is_forcing)
+
+        print(f"{env} update successfully")
 
     except subprocess.CalledProcessError:
-        print(f"Failed to update `{package}`", file=sys.stderr)
+        print(f"Failed to update `{env}`", file=sys.stderr)
         print(f"Recreating the environment...", file=sys.stderr)
 
-        remove_package(package)
-        install_package(package, is_forcing=is_forcing)
+        remove_package(env)
+        install_package(env, is_forcing=is_forcing)
+
+    # Update metadata file
+    _create_metadata(env)
+    for pkg in  _get_injected_packages(env):
+        _inject_to_metadata(env, pkg)
 
 
 def _create_metadata(package: str):
