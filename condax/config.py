@@ -4,6 +4,7 @@ import shutil
 from typing import List, Optional, Union
 
 from condax.utils import to_path
+import condax.condarc as condarc
 import yaml
 
 _config_filename = "config.yaml"
@@ -26,8 +27,10 @@ _default_prefix_dir = (
 DEFAULT_PREFIX_DIR = to_path(os.environ.get("CONDAX_PREFIX_DIR", _default_prefix_dir))
 
 DEFAULT_BIN_DIR = to_path(os.environ.get("CONDAX_BIN_DIR", "~/.local/bin"))
+
+_channels_in_condarc = condarc.load_channels()
 DEFAULT_CHANNELS = (
-    os.environ.get("CONDAX_CHANNELS", "conda-forge  defaults").strip().split()
+    os.environ.get("CONDAX_CHANNELS", " ".join(_channels_in_condarc)).strip().split()
 )
 
 CONDA_ENVIRONMENT_FILE = to_path("~/.conda/environments.txt")
