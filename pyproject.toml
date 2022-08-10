@@ -1,6 +1,6 @@
 [metadata]
 name = 'condax'
-version = '0.1.0'
+version = '0.1.1'
 description = 'Install and run applications packaged with conda in isolated environments'
 author = 'Marius van Niekerk'
 author_email = 'marius.v.niekerk@gmail.com'
