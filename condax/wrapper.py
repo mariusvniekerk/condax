@@ -11,7 +11,7 @@ from condax.utils import to_path
 
 def read_env_name(script_path: Union[str, Path]) -> Optional[str]:
     """
-    Read a condax wrapper script.
+    Read a condax bash script.
 
     Returns the environment name within which conda run is executed.
     """
@@ -79,7 +79,7 @@ def is_wrapper(exec_path: Union[str, Path]) -> bool:
 
 class Parser(object):
     """
-    Parser.parse(lines) parses lines to get 'conda run' information.
+    Parser.parse(lines) parses text to get 'conda run' information.
     """
 
     p = argparse.ArgumentParser()

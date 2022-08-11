@@ -1,5 +1,5 @@
 """
-Utilities for migrating condax to a new version from the original one (version 0.0.5).
+Utilities for migrating from the original condax (version 0.0.5).
 
 """
 import logging

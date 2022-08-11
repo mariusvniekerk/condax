@@ -24,6 +24,10 @@ class InjectedPackage(_PackageBase):
 
 
 class CondaxMetaData(object):
+    """
+    Handle metadata information written in `condax_metadata.json`
+    placed in each environment.
+    """
 
     metadata_file = "condax_metadata.json"
 

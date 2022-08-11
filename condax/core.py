@@ -500,7 +500,12 @@ def _get_wrapper_path(cmd_name: str) -> Path:
 
 
 def export_all_environments(out_dir: str) -> None:
-    """Export all environments to a directory."""
+    """Export all environments to a directory.
+
+    NOTE: Each environment exports two files:
+        - One is YAML from `conda env export`.
+        - Another is a copy of `condax_metadata.json`.
+    """
     p = Path(out_dir)
     p.mkdir(parents=True, exist_ok=True)
     print("Started exporting all environments to", p)
@@ -514,14 +519,15 @@ def export_all_environments(out_dir: str) -> None:
 
 
 def _copy_metadata(env: str, p: Path):
-    """Copy the condax_metadata.json file to the exported directory."""
+    """Export `condax_metadata.json` in the prefix directory `env`
+    to the specified directory."""
     _from = metadata.CondaxMetaData.get_path(env)
     _to = p / f"{env}.json"
     shutil.copyfile(_from, _to, follow_symlinks=True)
 
 
 def _overwrite_metadata(envfile: Path):
-    """Copy the condax_metadata.json file to the exported directory."""
+    """Import `condax_metadata.json file` to the prefix directory."""
     env = envfile.stem
     _from = envfile
     _to = metadata.CondaxMetaData.get_path(env)
@@ -553,8 +559,7 @@ def import_environments(in_dir: str, is_forcing: bool) -> None:
 
 
 def _get_executables_to_link(env: str) -> List[Path]:
-    """
-    Return a list of executables to link.
+    """Return a list of executables to link.
     """
     meta = _load_metadata(env)
 
@@ -587,6 +592,7 @@ def _recreate_all_links():
 
 
 def _prune_links():
+    """Remove condax bash scripts if broken."""
     to_apps = {env: _get_apps(env) for env in _get_all_envs()}
 
     utils.mkdir(C.bin_dir())
@@ -630,8 +636,7 @@ def _add_to_conda_env_list() -> None:
 
 
 def fix_links():
-    """
-    Run the repair lin.
+    """Repair condax bash scripts in bin_dir.
     """
     utils.mkdir(C.bin_dir())
 

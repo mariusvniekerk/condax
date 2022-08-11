@@ -62,7 +62,7 @@ def setup_micromamba() -> Path:
     return umamba_exe
 
 
-def _download_extract_micromamba(umamba_dst: Path):
+def _download_extract_micromamba(umamba_dst: Path) -> None:
     url = utils.get_micromamba_url()
     print(f"Downloading micromamba from {url}")
     response = requests.get(url, allow_redirects=True)
@@ -89,7 +89,11 @@ def _download_extract_micromamba(umamba_dst: Path):
 #     )
 
 
-def create_conda_environment(spec: str):
+def create_conda_environment(spec: str) -> None:
+    """Create an environment by installing a package.
+
+    NOTE: `spec` may contain version specificaitons.
+    """
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(spec)
 
@@ -111,8 +115,11 @@ def create_conda_environment(spec: str):
     )
 
 
-def inject_to_conda_env(specs: Iterable[str], env_name: str):
+def inject_to_conda_env(specs: Iterable[str], env_name: str) -> None:
+    """Add packages onto existing `env_name`.
 
+    NOTE: a spec may contain version specification.
+    """
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
     channels_args = [x for c in C.channels() for x in ["--channel", c]]
@@ -133,7 +140,9 @@ def inject_to_conda_env(specs: Iterable[str], env_name: str):
     )
 
 
-def uninject_from_conda_env(packages: Iterable[str], env_name: str):
+def uninject_from_conda_env(packages: Iterable[str], env_name: str) -> None:
+    """Remove packages from existing environment `env_name`.
+    """
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
 
@@ -150,7 +159,8 @@ def uninject_from_conda_env(packages: Iterable[str], env_name: str):
     )
 
 
-def remove_conda_env(package: str):
+def remove_conda_env(package: str) -> None:
+    """Remove a conda environment."""
     conda_exe = ensure_conda()
 
     _subprocess_run(
@@ -158,7 +168,11 @@ def remove_conda_env(package: str):
     )
 
 
-def update_conda_env(spec: str, update_specs: bool):
+def update_conda_env(spec: str, update_specs: bool) -> None:
+    """Update packages in an environment.
+
+    NOTE: More controls of package updates might be needed.
+    """
     _, match_spec = utils.split_match_specs(spec)
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(spec)
@@ -345,7 +359,7 @@ def _subprocess_run(
     return res
 
 
-def export_env(env_name: str, out_dir: Path):
+def export_env(env_name: str, out_dir: Path) -> None:
     """Export an environment to a conda environment file."""
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
