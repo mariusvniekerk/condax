@@ -1,9 +1,9 @@
 import subprocess
 import tempfile
 
+
 def test_condax_update_main_apps():
-    """Check if condax update main apps works correctly.
-    """
+    """Check if condax update main apps works correctly."""
     from condax.core import (
         install_package,
         update_package,
@@ -76,11 +76,14 @@ def test_condax_update_main_apps():
     assert res.stdout and (main_version_after_update in res.stdout.decode())
 
     meta = metadata.load(main_pkg)
-    assert meta and meta.main_package and set(meta.main_package.apps) == main_apps_after_update
+    assert (
+        meta
+        and meta.main_package
+        and set(meta.main_package.apps) == main_apps_after_update
+    )
 
     prefix_fp.cleanup()
     bin_fp.cleanup()
-
 
 
 ## TODO: Add tests for update of injected packages

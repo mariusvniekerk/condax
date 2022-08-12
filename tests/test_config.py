@@ -45,4 +45,4 @@ def test_set_via_file_1():
     set_via_file(temp.name)
     assert C.prefix_dir() == Path("/path/to/")
     assert C.bin_dir() == Path.home() / ".yet/another path/foo"
-    assert C.channels() == ["fastchan"]
+    assert "fastchan" in C.channels()

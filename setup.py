@@ -43,6 +43,6 @@ setup(
     install_requires=REQUIRES,
     tests_require=["coverage", "pytest"],
     packages=find_packages(exclude=("tests", "tests.*")),
-    entry_points={"console_scripts": ["condax = condax.cli:cli"]},
+    entry_points={"console_scripts": ["condax = condax.cli.__main__:main"]},
     zip_safe=True,
 )

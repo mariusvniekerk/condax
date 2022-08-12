@@ -5,6 +5,8 @@ from typing import List, Tuple, Union
 import re
 import urllib.parse
 
+from condax.exceptions import CondaxError
+
 
 pat = re.compile(r"<=|>=|==|!=|<|>|=")
 
@@ -128,10 +130,19 @@ def get_micromamba_url() -> str:
     elif platform.system() == "Windows" and platform.machine() in ("AMD64", "x86_64"):
         subdir = "win-64/latest"
     else:
-        raise ValueError(f"Unsupported platform: {platform.system()} {platform.machine()}")
+        raise ValueError(
+            f"Unsupported platform: {platform.system()} {platform.machine()}"
+        )
 
     url = urllib.parse.urljoin(base, subdir)
     return url
+
+
+class UnsuportedPlatformError(CondaxError):
+    def __init__(self):
+        super().__init__(
+            30, f"Unsupported platform: {platform.system()} {platform.machine()}"
+        )
 
 
 def get_conda_url() -> str:
@@ -146,7 +157,7 @@ def get_conda_url() -> str:
     elif platform.system() == "Windows" and platform.machine() in ("AMD64", "x86_64"):
         subdir = "conda-latest-win-64.exe"
     else:
-        raise ValueError(f"Unsupported platform: {platform.system()} {platform.machine()}")
+        raise UnsuportedPlatformError()
 
     url = urllib.parse.urljoin(base, subdir)
     return url

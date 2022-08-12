@@ -9,35 +9,35 @@ import subprocess
 from pathlib import Path
 import sys
 import tarfile
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Callable, Iterable, List, Optional, Set, Tuple, Union
 
 import requests
 
 from condax.config import C
+from condax.exceptions import CondaxError
 from condax.utils import to_path
 import condax.utils as utils
 
 
-def ensure_conda() -> Path:
-    execs = ["mamba", "conda"]
-    for conda_exec in execs:
-        conda_path = shutil.which(conda_exec)
-        if conda_path is not None:
-            return to_path(conda_path)
+logger = logging.getLogger(__name__)
 
-    logging.info("No existing conda installation found.  Installing the standalone")
-    return setup_conda()
+
+def _ensure(execs: Iterable[str], installer: Callable[[], Path]) -> Path:
+    for exe in execs:
+        exe_path = shutil.which(exe)
+        if exe_path is not None:
+            return to_path(exe_path)
+
+    logger.info("No existing conda installation found. Installing the standalone")
+    return installer()
+
+
+def ensure_conda() -> Path:
+    return _ensure(("conda", "mamba"), setup_conda)
 
 
 def ensure_micromamba() -> Path:
-    execs = ["micromamba"]
-    for conda_exec in execs:
-        conda_path = shutil.which(conda_exec)
-        if conda_path is not None:
-            return to_path(conda_path)
-
-    logging.info("No existing conda installation found.  Installing the standalone")
-    return setup_micromamba()
+    return _ensure(("micromamba",), setup_micromamba)
 
 
 def setup_conda() -> Path:
@@ -89,7 +89,7 @@ def _download_extract_micromamba(umamba_dst: Path) -> None:
 #     )
 
 
-def create_conda_environment(spec: str) -> None:
+def create_conda_environment(spec: str, stdout: bool) -> None:
     """Create an environment by installing a package.
 
     NOTE: `spec` may contain version specificaitons.
@@ -111,11 +111,12 @@ def create_conda_environment(spec: str) -> None:
             "--quiet",
             "--yes",
             shlex.quote(spec),
-        ]
+        ],
+        suppress_stdout=not stdout,
     )
 
 
-def inject_to_conda_env(specs: Iterable[str], env_name: str) -> None:
+def inject_to_conda_env(specs: Iterable[str], env_name: str, stdout: bool) -> None:
     """Add packages onto existing `env_name`.
 
     NOTE: a spec may contain version specification.
@@ -125,7 +126,7 @@ def inject_to_conda_env(specs: Iterable[str], env_name: str) -> None:
     channels_args = [x for c in C.channels() for x in ["--channel", c]]
     specs_args = [shlex.quote(spec) for spec in specs]
 
-    res = _subprocess_run(
+    _subprocess_run(
         [
             conda_exe,
             "install",
@@ -136,13 +137,15 @@ def inject_to_conda_env(specs: Iterable[str], env_name: str) -> None:
             "--quiet",
             "--yes",
             *specs_args,
-        ]
+        ],
+        suppress_stdout=not stdout,
     )
 
 
-def uninject_from_conda_env(packages: Iterable[str], env_name: str) -> None:
-    """Remove packages from existing environment `env_name`.
-    """
+def uninject_from_conda_env(
+    packages: Iterable[str], env_name: str, stdout: bool
+) -> None:
+    """Remove packages from existing environment `env_name`."""
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
 
@@ -155,20 +158,22 @@ def uninject_from_conda_env(packages: Iterable[str], env_name: str) -> None:
             "--quiet",
             "--yes",
             *packages,
-        ]
+        ],
+        suppress_stdout=not stdout,
     )
 
 
-def remove_conda_env(package: str) -> None:
+def remove_conda_env(package: str, stdout: bool) -> None:
     """Remove a conda environment."""
     conda_exe = ensure_conda()
 
     _subprocess_run(
-        [conda_exe, "remove", "--prefix", conda_env_prefix(package), "--all", "--yes"]
+        [conda_exe, "remove", "--prefix", conda_env_prefix(package), "--all", "--yes"],
+        suppress_stdout=not stdout,
     )
 
 
-def update_conda_env(spec: str, update_specs: bool) -> None:
+def update_conda_env(spec: str, update_specs: bool, stdout: bool) -> None:
     """Update packages in an environment.
 
     NOTE: More controls of package updates might be needed.
@@ -178,50 +183,33 @@ def update_conda_env(spec: str, update_specs: bool) -> None:
     prefix = conda_env_prefix(spec)
     channels_args = [x for c in C.channels() for x in ["--channel", c]]
     update_specs_args = ["--update-specs"] if update_specs else []
-
     # NOTE: `conda update` does not support version specification.
     # It suggets to use `conda install` instead.
+    args: Iterable[str]
     if conda_exe.name == "conda" and match_spec:
-        command = [
-                conda_exe,
-                "install",
-                "--prefix",
-                prefix,
-                "--override-channels",
-                *channels_args,
-                "--quiet",
-                "--yes",
-                shlex.quote(spec),
-            ]
+        subcmd = "install"
+        args = (shlex.quote(spec),)
     elif match_spec:
-        command = [
-                conda_exe,
-                "update",
-                "--prefix",
-                prefix,
-                "--override-channels",
-                *channels_args,
-                *update_specs_args,
-                "--quiet",
-                "--yes",
-                shlex.quote(spec),
-            ]
+        subcmd = "update"
+        args = (*update_specs_args, shlex.quote(spec))
     else:
         ## FIXME: this update process is inflexible
-        command = [
-                conda_exe,
-                "update",
-                "--prefix",
-                prefix,
-                "--override-channels",
-                *channels_args,
-                *update_specs_args,
-                "--quiet",
-                "--yes",
-                "--all",
-            ]
+        subcmd = "update"
+        args = (*update_specs_args, "--all")
 
-    _subprocess_run(command)
+    command: List[Union[Path, str]] = [
+        conda_exe,
+        subcmd,
+        "--prefix",
+        prefix,
+        "--override-channels",
+        "--quiet",
+        "--yes",
+        *channels_args,
+        *args,
+    ]
+
+    _subprocess_run(command, suppress_stdout=not stdout)
 
 
 def has_conda_env(package: str) -> bool:
@@ -249,16 +237,17 @@ def get_package_info(package: str, specific_name=None) -> Tuple[str, str, str]:
                     build: str = package_info["build"]
                     return (name, version, build)
     except ValueError:
-        logging.info(
-            "".join(
-                [
-                    f"Could not retrieve package info: {package}",
-                    f" - {specific_name}" if specific_name else "",
-                ]
-            )
+        logger.warning(
+            f"Could not retrieve package info: {package}"
+            + (f" - {specific_name}" if specific_name else "")
         )
 
     return ("", "", "")
+
+
+class DeterminePkgFilesError(CondaxError):
+    def __init__(self, package: str):
+        super().__init__(40, f"Could not determine package files: {package}.")
 
 
 def determine_executables_from_env(
@@ -273,10 +262,10 @@ def determine_executables_from_env(
 
     conda_meta_dir = env_prefix / "conda-meta"
     for file_name in conda_meta_dir.glob(f"{target_name}*.json"):
-        with open(file_name, "r") as fo:
+        with file_name.open() as fo:
             package_info = json.load(fo)
             if package_info["name"] == target_name:
-                potential_executables: List[str] = [
+                potential_executables: Set[str] = {
                     fn
                     for fn in package_info["files"]
                     if (fn.startswith("bin/") and is_good(fn))
@@ -284,19 +273,16 @@ def determine_executables_from_env(
                     # They are Windows style path
                     or (fn.lower().startswith("scripts") and is_good(fn))
                     or (fn.lower().startswith("library") and is_good(fn))
-                ]
+                }
                 break
     else:
-        raise ValueError(
-            f"Could not determine package files: {package} - {injected_package}"
-        )
+        raise DeterminePkgFilesError(target_name)
 
-    executables = set()
-    for fn in potential_executables:
-        exec_path = env_prefix / fn
-        if utils.is_executable(exec_path):
-            executables.add(exec_path)
-    return sorted(executables)
+    return sorted(
+        env_prefix / fn
+        for fn in potential_executables
+        if utils.is_executable(env_prefix / fn)
+    )
 
 
 def _get_conda_package_dirs() -> List[Path]:
@@ -345,21 +331,31 @@ def get_dependencies(package: str) -> List[str]:
     return result
 
 
+class SubprocessError(CondaxError):
+    def __init__(self, code: int, exe: Union[Path, str]):
+        super().__init__(code, f"{exe} exited with code {code}.")
+
+
 def _subprocess_run(
-    args: Union[str, List[Union[str, Path]]], **kwargs
+    args: Union[str, List[Union[str, Path]]], suppress_stdout: bool = True, **kwargs
 ) -> subprocess.CompletedProcess:
     """
     Run a subprocess and return the CompletedProcess object.
     """
     env = os.environ.copy()
     env.update({"MAMBA_NO_BANNER": "1"})
-    res = subprocess.run(args, **kwargs, env=env)
+    res = subprocess.run(
+        args,
+        **kwargs,
+        stdout=subprocess.DEVNULL if suppress_stdout else None,
+        env=env,
+    )
     if res.returncode != 0:
-        sys.exit(res.returncode)
+        raise SubprocessError(res.returncode, args[0])
     return res
 
 
-def export_env(env_name: str, out_dir: Path) -> None:
+def export_env(env_name: str, out_dir: Path, stdout: bool = False) -> None:
     """Export an environment to a conda environment file."""
     conda_exe = ensure_conda()
     prefix = conda_env_prefix(env_name)
@@ -374,11 +370,12 @@ def export_env(env_name: str, out_dir: Path) -> None:
             prefix,
             "--file",
             filepath,
-        ]
+        ],
+        suppress_stdout=not stdout,
     )
 
 
-def import_env(env_file: Path, is_forcing: bool = False):
+def import_env(env_file: Path, is_forcing: bool = False, stdout: bool = False) -> None:
     """Import an environment from a conda environment file."""
     conda_exe = ensure_conda()
     force_args = ["--force"] if is_forcing else []
@@ -394,5 +391,6 @@ def import_env(env_file: Path, is_forcing: bool = False):
             prefix,
             "--file",
             env_file,
-        ]
+        ],
+        suppress_stdout=not stdout,
     )

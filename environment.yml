@@ -12,3 +12,6 @@ dependencies:
   - pytest
   - coverage
   # Doc depe
+  - rainbowlog >=2.0.0
+  - types-PyYAML
+  - types-requests
