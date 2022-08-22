@@ -11,10 +11,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
-    - name: set PY
-      run: echo "::set-env name=PY::$(python --version --version | sha256sum | cut -d' ' -f1)"
-    - uses: actions/cache@v3
-      with:
-        path: ~/.cache/pre-commit
-        key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
     - uses: pre-commit/action@v3.0.0
