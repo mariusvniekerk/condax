@@ -89,11 +89,11 @@ def update_package(package):
             conda.detemine_executables_from_env(package)
         )
 
-        to_delete = executables_linked_in_updated - executables_already_linked
-        to_create = executables_already_linked - executables_linked_in_updated
+        to_create = executables_linked_in_updated - executables_already_linked
+        to_delete = executables_already_linked - executables_linked_in_updated
 
-        remove_links(to_delete)
         create_links(to_create)
+        remove_links(to_delete)
         print(f"{package} update successfully")
 
     except subprocess.CalledProcessError:
