@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import platform
+import re
 import shutil
 import stat
 import subprocess
@@ -112,14 +113,23 @@ def conda_env_prefix(package):
     return os.path.join(CONDA_ENV_PREFIX_PATH, package)
 
 
+_RE_PKG_NAME = re.compile(r"^[a-zA-Z0-9._-]+")
+
+
+def package_name(package_spec):
+    """Get the package name from a package spec"""
+    return _RE_PKG_NAME.match(package_spec).group(0)
+
+
 def detemine_executables_from_env(package):
     env_prefix = conda_env_prefix(package)
 
-    glob_pattern = os.path.join(env_prefix, "conda-meta", f"{package}*.json")
+    name = package_name(package)
+    glob_pattern = os.path.join(env_prefix, "conda-meta", f"{name}*.json")
     for file_name in glob.glob(glob_pattern):
         with open(file_name, "r") as fo:
             package_info = json.load(fo)
-            if package_info["name"] == package:
+            if package_info["name"] == name:
                 potential_executables = [
                     fn
                     for fn in package_info["files"]
