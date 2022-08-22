@@ -43,7 +43,7 @@ def install(channel, package, link_conflict):
     core.install_package(
         package,
         channels=channel,
-        link_conflict_action=core.LinkConflictAction(link_conflict)
+        link_conflict_action=core.LinkConflictAction(link_conflict),
     )
 
 

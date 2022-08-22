@@ -1,12 +1,13 @@
-from enum import Enum
 import os
 import pathlib
 import subprocess
 import sys
+from enum import Enum
 
 from . import conda
 from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION, DEFAULT_CHANNELS
 from .paths import mkpath
+
 
 class LinkConflictAction(Enum):
     ERROR = "error"
@@ -28,7 +29,10 @@ def create_link_windows(exe, link_conflict_action):
             )
             sys.exit(1)
         elif link_conflict_action == LinkConflictAction.SKIP:
-            print(f"Skipping link for {executable_name} because it already exists", file=sys.stderr)
+            print(
+                f"Skipping link for {executable_name} because it already exists",
+                file=sys.stderr,
+            )
             return False
         elif link_conflict_action == LinkConflictAction.OVERWRITE:
             print(f"Overwriting existing link {bat_path}", file=sys.stderr)
@@ -61,13 +65,17 @@ def create_link_unix(exe, link_conflict_action):
             )
             sys.exit(1)
         elif link_conflict_action == LinkConflictAction.SKIP:
-            print(f"Skipping link for {executable_name} because it already exists", file=sys.stderr)
+            print(
+                f"Skipping link for {executable_name} because it already exists",
+                file=sys.stderr,
+            )
             return False
 
 
 def create_link(exe, link_conflict_action):
     create_link_func = create_link_windows if sys.platform == "nt" else create_link_unix
     return create_link_func(exe, link_conflict_action)
+
 
 def create_links(executables_to_link, link_conflict_action):
     print(os.listdir(CONDAX_LINK_DESTINATION))
@@ -95,7 +103,9 @@ def remove_links(executables_to_unlink):
             print(f"    {executable_name}", file=sys.stderr)
 
 
-def install_package(package, channels=DEFAULT_CHANNELS, link_conflict_action=LinkConflictAction.ERROR):
+def install_package(
+    package, channels=DEFAULT_CHANNELS, link_conflict_action=LinkConflictAction.ERROR
+):
     conda.create_conda_environment(package, channels=channels)
     executables_to_link = conda.detemine_executables_from_env(package)
     mkpath(CONDAX_LINK_DESTINATION)
