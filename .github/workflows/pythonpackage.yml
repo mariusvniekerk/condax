@@ -37,6 +37,7 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
+        pip install -e .
         pytest .
         
     - name: Attempt to install library
