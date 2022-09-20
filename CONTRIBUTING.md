@@ -22,7 +22,7 @@ To run the tests you can use `pytest`.
 $ pytest
 ```
 
-## Code Style
+## Code Formatting
 
 This project uses `black` for code formatting and `isort` to order imports. To format your code run:
 
@@ -39,12 +39,18 @@ This project uses `mypy` for type checking. To run the type checker run:
 $ mypy .
 ```
 
-## Running Tests, Formatting, and Type Checking
+## Running Formatting and Type Checking at once
 
-For your convinience you can run all of the above commands with:
+To run all of the above tools at once, you can use pre-commit.
 
 ```bash
-$ hatch run check
+$ pre-commit run
 ```
 
-If you don't it will be run automatically when you open a pull request.
+To configure it to run automatically when commiting code with git, run:
+
+```bash
+$ pre-commit install
+```
+
+If you don't do any of this, it will be run automatically anyways when you open a pull request.
