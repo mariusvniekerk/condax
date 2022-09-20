@@ -48,6 +48,7 @@ dependencies = [
 	"black",
 	"types-PyYAML",
 	"types-requests",
+	"pre-commit",
 ]
 
 [tool.hatch.envs.default.scripts]
