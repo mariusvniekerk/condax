@@ -44,7 +44,7 @@ $ mypy .
 To run all of the above tools at once, you can use pre-commit.
 
 ```bash
-$ pre-commit run
+$ pre-commit run --all-files
 ```
 
 To configure it to run automatically when commiting code with git, run:
