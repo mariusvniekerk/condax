@@ -3,8 +3,7 @@ name = 'condax'
 description = 'Install and run applications packaged with conda in isolated environments'
 readme = "README.md"
 authors = [
-	{ name = 'Marius van Niekerk', email = 'marius.v.niekerk@gmail.com' },
-	{ name = 'Abraham Murciano', email = 'abrahammurciano@gmail.com' },
+	{ name = 'Marius van Niekerk', email = 'marius.v.niekerk@gmail.com' }
 ]
 license = 'MIT'
 requires-python = '>=3.7'
