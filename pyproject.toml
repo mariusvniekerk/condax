@@ -1,29 +1,31 @@
 [project]
 name = 'condax'
 description = 'Install and run applications packaged with conda in isolated environments'
-readne = "README.md"
+readme = "README.md"
 authors = [
-    { name = 'Marius van Niekerk', email = 'marius.v.niekerk@gmail.com' },
+	{ name = 'Marius van Niekerk', email = 'marius.v.niekerk@gmail.com' }
 ]
 license = 'MIT'
 requires-python = '>=3.7'
 classifiers = [
-    'Development Status :: 4 - Beta',
-    'Intended Audience :: Developers',
-    'License :: OSI Approved :: MIT License',
-    'Programming Language :: Python :: 3 :: Only',   
-    "Topic :: System :: Installation/Setup"
+	'Development Status :: 4 - Beta',
+	'Intended Audience :: Developers',
+	'License :: OSI Approved :: MIT License',
+	'Programming Language :: Python :: 3 :: Only',
+	"Topic :: System :: Installation/Setup",
 ]
 dependencies = [
-    "click",
-    "requests",
-    "userpath",
-    "PyYAML"
+	"click",
+	"requests",
+	"userpath",
+	"PyYAML",
+	'importlib_metadata; python_version < "3.8.0"',
 ]
 dynamic = ["version"]
 
 [project.urls]
 Homepage = 'https://github.com/mariusvniekerk/condax'
+Documentation = 'https://mariusvniekerk.github.io/condax/'
 
 [build-system]
 requires = ["hatchling>=0.21.1", "hatch-vcs"]
@@ -34,6 +36,22 @@ condax = "condax.cli:cli"
 
 [tool.hatch.version]
 source = "vcs"
+
+[tool.hatch.envs.default]
+dependencies = [
+	"pytest",
+	"coverage",
+	"build",
+	"mypy",
+	"isort",
+	"black",
+	"types-PyYAML",
+	"types-requests",
+	"pre-commit",
+]
+
+[tool.hatch.envs.default.scripts]
+check = "mypy condax ; black . ; isort condax tests ; pytest"
 
 [tool.isort]
 profile = "black"
