@@ -12,8 +12,8 @@ def conf(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPat
 
     import condax.config
 
-    monkeypatch.setattr(condax.config, "CONDA_ENV_PREFIX_PATH", str(prefix))
-    monkeypatch.setattr(condax.config, "CONDAX_LINK_DESTINATION", str(link))
+    monkeypatch.setattr(condax.config.CONFIG, "prefix_path", prefix)
+    monkeypatch.setattr(condax.config.CONFIG, "link_destination", link)
     monkeypatch.setenv("PATH", str(link), prepend=os.pathsep)
     return {"prefix": str(prefix), "link": str(link)}
 
