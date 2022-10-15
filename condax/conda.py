@@ -134,14 +134,17 @@ def detemine_executables_from_env(
             potential_executables: List[str] = [
                 fn
                 for fn in package_info["files"]
-                if fn.startswith("bin/") or fn.startswith("sbin/")
-                # They are Windows style path
-                (
-                    is_windows()
-                    and (
-                        fn.lower().startswith("scripts\\")
-                        or fn.lower().startswith("library\\mingw-w64\\bin\\")
-                        or re.match(r"library\\.*\\bin\\", fn.lower())
+                if (
+                    fn.startswith("bin/")
+                    or fn.startswith("sbin/")
+                    # They are Windows style path
+                    or (
+                        is_windows()
+                        and (
+                            fn.lower().startswith("scripts\\")
+                            or fn.lower().startswith("library\\mingw-w64\\bin\\")
+                            or re.match(r"library\\.*\\bin\\", fn.lower())
+                        )
                     )
                 )
             ]
