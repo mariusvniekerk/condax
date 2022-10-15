@@ -128,7 +128,7 @@ def detemine_executables_from_env(
     for path in metas:
         package_info = json.loads(path.read_text())
         if package_info["name"] == name:
-            potential_executables: list[str] = [
+            potential_executables: List[str] = [
                 fn
                 for fn in package_info["files"]
                 if fn.startswith("bin/")
@@ -141,7 +141,7 @@ def detemine_executables_from_env(
         raise ValueError("Could not determine package files")
 
     pathext = os.environ.get("PATHEXT", "").split(";")
-    executables: set[Path] = set()
+    executables: Set[Path] = set()
     for fn in potential_executables:
         abs_executable_path = env_prefix / fn
         # unix
