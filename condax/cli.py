@@ -5,7 +5,7 @@ import typer
 
 from . import config, core, paths
 
-app = typer.Typer(
+cli = typer.Typer(
     name="condax",
     help="Install and execute applications packaged by conda.",
     no_args_is_help=True,
@@ -29,7 +29,7 @@ _OPTION_LINK_ACTION = typer.Option(
 )
 
 
-@app.command(
+@cli.command(
     help=f"""\
         Install a package with condax.
 
@@ -61,7 +61,7 @@ def install(
     )
 
 
-@app.command(
+@cli.command(
     help=f"""\
         Inject a package into a condax managed environment.
 
@@ -98,7 +98,7 @@ def inject(
     )
 
 
-@app.command(
+@cli.command(
     help="""
     Remove a package installed by condax.
 
@@ -115,7 +115,7 @@ def remove(
     core.remove_package(package)
 
 
-@app.command(
+@cli.command(
     help="""
     Ensure the condax links directory is on $PATH.
 
@@ -125,12 +125,12 @@ def ensure_path() -> None:
     paths.add_path_to_environment(config.CONFIG.link_destination)
 
 
-@app.command(help="""Display the conda prefix for a condax package.""")
+@cli.command(help="""Display the conda prefix for a condax package.""")
 def prefix(package: str) -> None:
     typer.echo(core.prefix(package))
 
 
-@app.command(
+@cli.command(
     help="""
     Update package(s) installed by condax.
 
@@ -159,4 +159,4 @@ def update(
 
 
 if __name__ == "__main__":
-    app()
+    cli()
