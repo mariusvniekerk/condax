@@ -130,6 +130,7 @@ def detemine_executables_from_env(
     for path in metas:
         package_info = json.loads(path.read_text())
         if package_info["name"] == name:
+            logging.debug("Candidate files: %s", package_info["files"])
             potential_executables: List[str] = [
                 fn
                 for fn in package_info["files"]
