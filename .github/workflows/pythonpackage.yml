@@ -38,7 +38,7 @@ jobs:
       run: |
         pip install --quiet pytest
         pip install -e .
-        pytest .
+        pytest --showlocals .
         
     - name: Attempt to install library
       run: |
