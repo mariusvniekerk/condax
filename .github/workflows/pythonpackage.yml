@@ -21,7 +21,9 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-        cache-dependency-path: 'pyproject.toml'
+        cache-dependency-path: |
+          pyproject.toml
+          ci_deps.txt
 
     - name: Install dependencies
       run: |
