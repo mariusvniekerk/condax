@@ -6,7 +6,7 @@ import subprocess
 import sys
 from enum import Enum
 from pathlib import Path
-from typing import Collection, Dict, Generator, List, Optional
+from typing import Any, Collection, Dict, Generator, List, Optional
 
 import typer
 
@@ -139,7 +139,13 @@ def prefix_metadata(env_prefix: Path) -> Generator[PrefixMetadata, None, None]:
     else:
         ret = PrefixMetadata(prefix=env_prefix)
     yield ret
-    metadata_path.write_text(ret.json(indent=2))
+
+    def encoder(obj: Any) -> "str | Any":
+        if isinstance(obj, Path):
+            return str(obj)
+        return obj
+
+    metadata_path.write_text(ret.json(indent=2, exclude_unset=True, encoder=encoder))
 
 
 def remove_links(executables_to_unlink: Collection[Path], env_prefix: Path) -> None:
