@@ -1,4 +1,0 @@
-pip
-build
-pytest
-flake8

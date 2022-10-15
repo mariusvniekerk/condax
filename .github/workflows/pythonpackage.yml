@@ -23,7 +23,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache-dependency-path: |
           pyproject.toml
-          ci_deps.txt
+          ci/requirements.txt
 
     - name: Install dependencies
       run: |
