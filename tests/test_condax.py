@@ -31,7 +31,14 @@ def test_pipx_install_roundtrip(conf):
     start = which("jq")
     assert (start is None) or (not start.startswith(conf["link"]))
     install_package("jq")
-    post_install = which("jq")
+
+    import condax.config
+
+    files = list(condax.config.CONFIG.link_destination.iterdir())
+    print("Link Prefix:", conf["link"])
+    print("Files:", files)
+
+    post_install = which("jq", path=os.environ["PATH"])
     assert post_install is not None
     assert post_install.startswith(conf["link"])
 
@@ -40,5 +47,5 @@ def test_pipx_install_roundtrip(conf):
 
     # remove the env
     remove_package("jq")
-    post_remove = which("jq")
+    post_remove = which("jq", path=os.environ["PATH"])
     assert (post_remove is None) or (not post_remove.startswith(conf["link"]))
