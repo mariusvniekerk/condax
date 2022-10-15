@@ -43,10 +43,10 @@ def create_conda_environment(
 
     subprocess.check_call(
         [
-            conda_exe,
+            str(conda_exe),
             "create",
             "--prefix",
-            prefix,
+            str(prefix),
             "--override-channels",
             *channels_args,
             "--quiet",
@@ -73,10 +73,10 @@ def install_conda_packages(
 
     subprocess.check_call(
         [
-            conda_exe,
+            str(conda_exe),
             "install",
             "--prefix",
-            prefix,
+            str(prefix),
             "--override-channels",
             *channels_args,
             "--quiet",
@@ -90,8 +90,9 @@ def remove_conda_env(package) -> None:
     conda_exe = CONFIG.conda_executable
     assert conda_exe is not None
 
+    prefix = conda_env_prefix(package)
     subprocess.check_call(
-        [conda_exe, "remove", "--prefix", conda_env_prefix(package), "--all", "--yes"]
+        [str(conda_exe), "remove", "--prefix", str(prefix), "--all", "--yes"]
     )
 
 
@@ -99,8 +100,9 @@ def update_conda_env(package) -> None:
     conda_exe = CONFIG.conda_executable
     assert conda_exe is not None
 
+    prefix = conda_env_prefix(package)
     subprocess.check_call(
-        [conda_exe, "update", "--prefix", conda_env_prefix(package), "--all", "--yes"]
+        [str(conda_exe), "update", "--prefix", str(prefix), "--all", "--yes"]
     )
 
 
