@@ -1,61 +1,21 @@
-import glob
 import json
 import logging
 import os
-import platform
 import re
-import shutil
-import stat
 import subprocess
+from pathlib import Path
+from typing import List, Optional, Set
 
-import requests
-
-from .config import CONDA_ENV_PREFIX_PATH, CONDAX_LINK_DESTINATION, DEFAULT_CHANNELS
-from .paths import mkpath
-
-
-def ensure_conda():
-    conda_executable = shutil.which("conda")
-    if conda_executable:
-        return conda_executable
-
-    conda_executable = shutil.which("conda.exe")
-    if conda_executable:
-        return conda_executable
-
-    logging.info("No existing conda installation found.  Installing the standalone")
-    return install_conda_exe()
+from .config import CONFIG
 
 
-def install_conda_exe():
-    conda_exe_prefix = "https://repo.anaconda.com/pkgs/misc/conda-execs"
-    if platform.system() == "Linux":
-        conda_exe_file = "conda-latest-linux-64.exe"
-    elif platform.system() == "Darwin":
-        conda_exe_file = "conda-latest-osx-64.exe"
-    else:
-        # TODO: Support windows here
-        raise ValueError(f"Unsupported platform: {platform.system()}")
-
-    resp = requests.get(f"{conda_exe_prefix}/{conda_exe_file}", allow_redirects=True)
-    resp.raise_for_status()
-    mkpath(CONDAX_LINK_DESTINATION)
-    target_filename = os.path.expanduser(
-        os.path.join(CONDAX_LINK_DESTINATION, "conda.exe")
-    )
-    with open(target_filename, "wb") as fo:
-        fo.write(resp.content)
-    st = os.stat(target_filename)
-    os.chmod(target_filename, st.st_mode | stat.S_IXUSR)
-    return target_filename
+def ensure_dest_prefix() -> None:
+    CONFIG.prefix_path.mkdir(parents=True, exist_ok=True)
 
 
-def ensure_dest_prefix():
-    if not os.path.exists(CONDA_ENV_PREFIX_PATH):
-        os.mkdir(CONDA_ENV_PREFIX_PATH)
-
-
-def write_condarc_to_prefix(prefix, channels, channel_priority="strict"):
+def write_condarc_to_prefix(
+    prefix: Path, channels: List[str], channel_priority: str = "strict"
+) -> None:
     """Create a condarc with the channel priority used for installing the given tool.
 
     Earlier channels have higher priority"""
@@ -68,11 +28,16 @@ def write_condarc_to_prefix(prefix, channels, channel_priority="strict"):
         fo.write("\n")
 
 
-def create_conda_environment(package, channels=DEFAULT_CHANNELS):
-    conda_exe = ensure_conda()
+def create_conda_environment(
+    package: str, channels: Optional[List[str]] = None
+) -> None:
+    conda_exe = CONFIG.conda_executable
+    assert conda_exe is not None
     prefix = conda_env_prefix(package)
+    if channels is None:
+        channels = CONFIG.channels
 
-    channels_args = []
+    channels_args: List[str] = []
     for c in channels:
         channels_args.extend(["--channel", c])
 
@@ -93,66 +58,99 @@ def create_conda_environment(package, channels=DEFAULT_CHANNELS):
     write_condarc_to_prefix(prefix, channels)
 
 
-def remove_conda_env(package):
-    conda_exe = ensure_conda()
+def install_conda_packages(
+    packages: List[str], prefix: Path, channels: Optional[List[str]] = None
+):
+    conda_exe = CONFIG.conda_executable
+    assert conda_exe is not None
+    if channels is None:
+        channels = CONFIG.channels
+
+    channels_args: List[str] = []
+    if channels is not None:
+        for c in channels:
+            channels_args.extend(["--channel", c])
+
+    subprocess.check_call(
+        [
+            conda_exe,
+            "install",
+            "--prefix",
+            prefix,
+            "--override-channels",
+            *channels_args,
+            "--quiet",
+            "--yes",
+            *packages,
+        ]
+    )
+
+
+def remove_conda_env(package) -> None:
+    conda_exe = CONFIG.conda_executable
+    assert conda_exe is not None
 
     subprocess.check_call(
         [conda_exe, "remove", "--prefix", conda_env_prefix(package), "--all", "--yes"]
     )
 
 
-def update_conda_env(package):
-    conda_exe = ensure_conda()
+def update_conda_env(package) -> None:
+    conda_exe = CONFIG.conda_executable
+    assert conda_exe is not None
 
     subprocess.check_call(
         [conda_exe, "update", "--prefix", conda_env_prefix(package), "--all", "--yes"]
     )
 
 
-def conda_env_prefix(package):
-    return os.path.join(CONDA_ENV_PREFIX_PATH, package)
+def conda_env_prefix(package: str) -> Path:
+    return CONFIG.prefix_path / package
 
 
 _RE_PKG_NAME = re.compile(r"^[a-zA-Z0-9._-]+")
 
 
-def package_name(package_spec):
+def package_name(package_spec: str):
     """Get the package name from a package spec"""
-    return _RE_PKG_NAME.match(package_spec).group(0)
+    m = _RE_PKG_NAME.match(package_spec)
+    assert m is not None
+    return m.group(0)
 
 
-def detemine_executables_from_env(package):
-    env_prefix = conda_env_prefix(package)
-
+def detemine_executables_from_env(
+    package: str, env_prefix: Optional[Path] = None
+) -> Set[Path]:
+    if env_prefix is None:
+        env_prefix = conda_env_prefix(package)
     name = package_name(package)
-    glob_pattern = os.path.join(env_prefix, "conda-meta", f"{name}*.json")
-    for file_name in glob.glob(glob_pattern):
-        with open(file_name, "r") as fo:
-            package_info = json.load(fo)
-            if package_info["name"] == name:
-                potential_executables = [
-                    fn
-                    for fn in package_info["files"]
-                    if fn.startswith("bin/")
-                    or fn.startswith("sbin/")
-                    or fn.lower().startswith("scripts/")
-                ]
-                # TODO: Handle windows style paths
-                break
+    metas = (env_prefix / "conda-meta").glob(f"{name}*.json")
+    for path in metas:
+        package_info = json.loads(path.read_text())
+        if package_info["name"] == name:
+            potential_executables: list[str] = [
+                fn
+                for fn in package_info["files"]
+                if fn.startswith("bin/")
+                or fn.startswith("sbin/")
+                or fn.lower().startswith("scripts/")
+            ]
+            # TODO: Handle windows style paths
+            break
     else:
         raise ValueError("Could not determine package files")
 
     pathext = os.environ.get("PATHEXT", "").split(";")
-    executables = set()
+    executables: set[Path] = set()
     for fn in potential_executables:
-        abs_executable_path = f"{env_prefix}/{fn}"
+        abs_executable_path = env_prefix / fn
         # unix
         if os.access(abs_executable_path, os.X_OK):
             executables.add(abs_executable_path)
         # windows
         for ext in pathext:
-            if ext and abs_executable_path.endswith(ext):
+            if ext and abs_executable_path.name.endswith(ext):
                 executables.add(abs_executable_path)
 
-    print(executables)
+    logging.debug(executables)
     return executables

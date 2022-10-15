@@ -19,6 +19,8 @@ dependencies = [
 	"requests",
 	"userpath",
 	"PyYAML",
+	"ensureconda",
+	"typer",
 	'importlib_metadata; python_version < "3.8.0"',
 ]
 dynamic = ["version"]

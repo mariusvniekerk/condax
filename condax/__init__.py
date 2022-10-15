@@ -5,4 +5,7 @@ if sys.version_info < (3, 8):
 else:
     from importlib.metadata import version
 
-__version__ = version(__package__)
+try:
+    __version__ = version(__package__)
+except Exception:
+    __version__ = "unknown"

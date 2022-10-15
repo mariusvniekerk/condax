@@ -6,9 +6,9 @@ import pytest
 
 
 @pytest.fixture
-def conf(tmpdir_factory, monkeypatch):
-    prefix = tmpdir_factory.mktemp("prefix")
-    link = tmpdir_factory.mktemp("link")
+def conf(tmppath_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch):
+    prefix = tmppath_factory.mktemp("prefix")
+    link = tmppath_factory.mktemp("link")
 
     import condax.config
 
@@ -25,6 +25,7 @@ def test_pipx_install_roundtrip(conf):
     assert (start is None) or (not start.startswith(conf["link"]))
     install_package("jq")
     post_install = which("jq")
+    assert post_install is not None
     assert post_install.startswith(conf["link"])
 
     # ensure that the executable installed is on PATH
