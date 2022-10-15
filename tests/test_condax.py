@@ -18,6 +18,13 @@ def conf(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPat
     return {"prefix": str(prefix), "link": str(link)}
 
 
+@pytest.fixture(scope="session", autouse=True)
+def ensure_conda_executable() -> None:
+    from condax.config import CONFIG
+
+    CONFIG.ensure_conda_executable()
+
+
 def test_pipx_install_roundtrip(conf):
     from condax.core import install_package, remove_package
 
