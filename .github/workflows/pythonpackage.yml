@@ -61,7 +61,7 @@ jobs:
 
     - name: Run the installed package
       run: |
-        export PATH="$PATH:${HOME}/.local/bin"
+        $env:Path = "$PATH;${HOME}/.local/bin"
         black --help
       if: matrix.os == 'windows-latest'
 
