@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import List, Optional, Set
 
-from .config import CONFIG
+from .config import CONFIG, is_windows
 
 
 def ensure_dest_prefix() -> None:
@@ -134,9 +134,16 @@ def detemine_executables_from_env(
             potential_executables: List[str] = [
                 fn
                 for fn in package_info["files"]
-                if fn.startswith("bin/")
-                or fn.startswith("sbin/")
-                or fn.lower().startswith("scripts/")
+                if fn.startswith("bin/") or fn.startswith("sbin/")
+                # They are Windows style path
+                (
+                    is_windows()
+                    and (
+                        fn.lower().startswith("scripts\\")
+                        or fn.lower().startswith("library\\mingw-w64\\bin\\")
+                        or re.match(r"library\\.*\\bin\\", fn.lower())
+                    )
+                )
             ]
             # TODO: Handle windows style paths
             break

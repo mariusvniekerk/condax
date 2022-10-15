@@ -1,7 +1,6 @@
 import contextlib
 import os
 import pathlib
-import platform
 import subprocess
 import sys
 from enum import Enum
@@ -11,7 +10,7 @@ from typing import Any, Collection, Dict, Generator, List, Optional
 import typer
 
 from . import conda
-from .config import CONFIG
+from .config import CONFIG, is_windows
 from .metadata import PrefixMetadata
 
 
@@ -19,10 +18,6 @@ class LinkConflictAction(str, Enum):
     ERROR = "error"
     OVERWRITE = "overwrite"
     SKIP = "skip"
-
-
-def is_windows() -> bool:
-    return platform.system() == "Windows"
 
 
 def link_path(exe: Path) -> Path:

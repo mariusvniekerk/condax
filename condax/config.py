@@ -1,4 +1,5 @@
 import os
+import platform
 from pathlib import Path
 from typing import TYPE_CHECKING, Generator, Optional
 
@@ -8,6 +9,10 @@ from pydantic import BaseSettings, Field
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
+
+
+def is_windows() -> bool:
+    return platform.system() == "Windows"
 
 
 class Config(BaseSettings):
