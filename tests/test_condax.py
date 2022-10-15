@@ -6,9 +6,9 @@ import pytest
 
 
 @pytest.fixture
-def conf(tmppath_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch):
-    prefix = tmppath_factory.mktemp("prefix")
-    link = tmppath_factory.mktemp("link")
+def conf(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch):
+    prefix = tmp_path_factory.mktemp("prefix")
+    link = tmp_path_factory.mktemp("link")
 
     import condax.config
 
