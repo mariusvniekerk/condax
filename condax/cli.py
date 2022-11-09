@@ -1,49 +1,100 @@
 import sys
+from typing import List, Optional
 
-import click
+import typer
 
 from . import config, core, paths
 
+cli = typer.Typer(
+    name="condax",
+    help="Install and execute applications packaged by conda.",
+    no_args_is_help=True,
+)
 
-@click.group(help="Install and execute applications packaged by conda.")
-def cli():
-    pass
+_OPTION_MAMBA = typer.Option(
+    False,
+    "--mamba",
+    help="Force using mamba.",
+)
+_OPTION_LINK_ACTION = typer.Option(
+    core.LinkConflictAction.ERROR,
+    "--link-conflict",
+    "-l",
+    help=f"""\
+            How to handle conflicts when a link with the same name already exists in
+            `{config.CONFIG.link_destination}`.  If `error` is specified, condax will exit with
+            an error if the link already exists.  If `overwrite` is specified, condax will
+            overwrite the existing link.  If `skip` is specified, condax will skip linking the
+            conflicting executable.""",
+)
 
 
 @cli.command(
-    help=f"""
-    Install a package with condax.
+    help=f"""\
+        Install a package with condax.
 
-    This will install a package into a new conda environment and link the executable
-    provided by it to `{config.CONDAX_LINK_DESTINATION}`.
-    """
+        This will install a package into a new conda environment and link the executable
+        provided by it to `{config.CONFIG.link_destination}`.
+        """,
 )
-@click.option(
-    "--channel",
-    "-c",
-    multiple=True,
-    help=f"""Use the channels specified to install.  If not specified condax will
-    default to using {config.DEFAULT_CHANNELS}.""",
-)
-@click.option(
-    "--link-conflict",
-    "-l",
-    default="error",
-    type=click.Choice([action.value for action in core.LinkConflictAction]),
-    help=f"""How to handle conflicts when a link with the same name already exists in
-    `{config.CONDAX_LINK_DESTINATION}`.  If `error` is specified, condax will exit with
-    an error if the link already exists.  If `overwrite` is specified, condax will
-    overwrite the existing link.  If `skip` is specified, condax will skip linking the
-    conflicting executable.""",
-)
-@click.argument("package")
-def install(channel, package, link_conflict):
+def install(
+    channel: Optional[List[str]] = typer.Option(
+        None,
+        "--channel",
+        "-c",
+        help=f"""\
+            Use the channels specified to install.  If not specified condax will
+            default to using {config.CONFIG.channels}.""",
+    ),
+    link_conflict: core.LinkConflictAction = _OPTION_LINK_ACTION,
+    mamba: bool = _OPTION_MAMBA,
+    package: str = typer.Argument(...),
+):
     if channel is None or (len(channel) == 0):
-        channel = config.DEFAULT_CHANNELS
+        channel = config.CONFIG.channels
+    config.CONFIG.ensure_conda_executable(require_mamba=mamba)
+
     core.install_package(
         package,
         channels=channel,
-        link_conflict_action=core.LinkConflictAction(link_conflict),
+        link_conflict_action=link_conflict,
+    )
+
+
+@cli.command(
+    help=f"""\
+        Inject a package into a condax managed environment.
+
+        This will install a package into an existing condax environment.
+        """,
+)
+def inject(
+    channel: Optional[List[str]] = typer.Option(
+        None,
+        "--channel",
+        "-c",
+        help=f"""\
+            Use the channels specified to install.  If not specified condax will
+            default to using {config.CONFIG.channels}.""",
+    ),
+    mamba: bool = _OPTION_MAMBA,
+    link_conflict: core.LinkConflictAction = _OPTION_LINK_ACTION,
+    include_apps: bool = typer.Option(
+        False, "--include-apps", "Adds applications of injected package to PATH."
+    ),
+    package: str = typer.Argument(..., help="The condax environment inject into."),
+    extra_packages: List[str] = typer.Argument(..., help="Extra packages to install."),
+):
+    if channel is None or (len(channel) == 0):
+        channel = config.CONFIG.channels
+    config.CONFIG.ensure_conda_executable(require_mamba=mamba)
+
+    core.inject_packages(
+        package,
+        extra_packages,
+        channels=channel,
+        link_conflict_action=link_conflict,
+        include_apps=include_apps,
     )
 
 
@@ -55,8 +106,12 @@ def install(channel, package, link_conflict):
     conda environment.
     """
 )
-@click.argument("package")
-def remove(package):
+def remove(
+    package: str,
+    mamba: bool = _OPTION_MAMBA,
+):
+    config.CONFIG.ensure_conda_executable(require_mamba=mamba)
+
     core.remove_package(package)
 
 
@@ -66,8 +121,13 @@ def remove(package):
 
     This can update shell configuration files like `~/.bashrc`."""
 )
-def ensure_path():
-    paths.add_path_to_environment(config.CONDAX_LINK_DESTINATION)
+def ensure_path() -> None:
+    paths.add_path_to_environment(config.CONFIG.link_destination)
+
+
+@cli.command(help="""Display the conda prefix for a condax package.""")
+def prefix(package: str) -> None:
+    typer.echo(core.prefix(package))
 
 
 @cli.command(
@@ -77,29 +137,25 @@ def ensure_path():
     This will update the underlying conda environments(s) to the latest release of a package.
 """
 )
-@click.option(
-    "--all", is_flag=True, help="Set to update all packages installed by condax"
-)
-@click.option(
-    "--link-conflict",
-    "-l",
-    default="error",
-    type=click.Choice([action.value for action in core.LinkConflictAction]),
-    help=f"""How to handle conflicts when a link with the same name already exists in
-    `{config.CONDAX_LINK_DESTINATION}`.  If `error` is specified, condax will exit with
-    an error if the link already exists.  If `overwrite` is specified, condax will
-    overwrite the existing link.  If `skip` is specified, condax will skip linking the
-    conflicting executable.""",
-)
-@click.argument("package", default="", required=False)
-@click.pass_context
-def update(ctx, all, link_conflict, package):
+def update(
+    all: bool = typer.Option(
+        False, "--all", help="Set to update all packages installed by condax"
+    ),
+    link_conflict: core.LinkConflictAction = _OPTION_LINK_ACTION,
+    mamba: bool = _OPTION_MAMBA,
+    package: Optional[str] = typer.Argument(None),
+):
+    config.CONFIG.ensure_conda_executable(require_mamba=mamba)
+    if all and package is not None:
+        typer.echo("Cannot specify --all and a package name")
+        sys.exit(1)
     if all:
-        core.update_all_packages(core.LinkConflictAction(link_conflict))
+        core.update_all_packages(link_conflict)
     elif package:
-        core.update_package(package, core.LinkConflictAction(link_conflict))
+        core.update_package(package, link_conflict)
     else:
-        print(ctx.get_help(), file=sys.stderr)
+        typer.echo("Must specify --all or a package name")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
