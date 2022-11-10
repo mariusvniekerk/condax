@@ -51,6 +51,9 @@ dependencies = [
 	"types-PyYAML",
 	"types-requests",
 	"pre-commit",
+	"mkdocs",
+	"mkdocs-material",
+	"mkdocs-typer"
 ]
 
 [tool.hatch.envs.default.scripts]
