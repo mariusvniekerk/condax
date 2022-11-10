@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import typer
 
-from . import config, core, paths
+from . import __version__, config, core, paths
 
 cli = typer.Typer(
     name="condax",
@@ -27,6 +27,25 @@ _OPTION_LINK_ACTION = typer.Option(
             overwrite the existing link.  If `skip` is specified, condax will skip linking the
             conflicting executable.""",
 )
+
+
+def version_callback(value: bool):
+    if value:
+        typer.echo(__version__)
+        raise typer.Exit(0)
+
+
+@cli.callback()
+def main(
+    version: bool = typer.Option(
+        None,
+        "--version",
+        callback=version_callback,
+        is_eager=True,
+        help="Print version and exit",
+    ),
+):
+    return
 
 
 @cli.command(
@@ -80,7 +99,7 @@ def inject(
     mamba: bool = _OPTION_MAMBA,
     link_conflict: core.LinkConflictAction = _OPTION_LINK_ACTION,
     include_apps: bool = typer.Option(
-        False, "--include-apps", "Adds applications of injected package to PATH."
+        False, "--include-apps", help="Adds applications of injected package to PATH."
     ),
     package: str = typer.Argument(..., help="The condax environment inject into."),
     extra_packages: List[str] = typer.Argument(..., help="Extra packages to install."),

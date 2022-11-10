@@ -1,11 +1,18 @@
 import os
 import platform
+import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Generator, Optional
 
 import yaml
-from ensureconda.api import ensureconda
 from pydantic import BaseSettings, Field
+
+with warnings.catch_warnings():
+    # requests which is a transitive dependency has some chatty warnings during import
+    warnings.simplefilter("ignore", Warning)
+    import requests  # noqa: F401
+
+from ensureconda.api import ensureconda
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
