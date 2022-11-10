@@ -37,12 +37,12 @@ Removing tools
 
 Updating tools
 
-```
+```bash
 > condax update imagemagick
 ```
 
 Or all of them at once
 
-```
+```bash
 > condax update --all
 ```

@@ -1,3 +1,5 @@
+# configuration
+
 Condax generally requires very little configuration.
 
 Condax will read configuration settings from a `~/.condaxrc` file, which is similar to a `.condarc` file.

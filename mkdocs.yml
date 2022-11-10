@@ -5,12 +5,16 @@ theme:
   name: "material"
 repo_name: mariusvniekerk/condax
 repo_url: https://github.com/mariusvniekerk/condax
+markdown_extensions: 
+  - mkdocs-typer
 
 nav:
   - Home: "index.md"
   - Installation: "installation.md"
-  - Commands: "commands.md"
+  - CLI Reference: "cli.md"
   - Configuration: "config.md"
   - How condax works: "how-this-works.md"
+  - "": ""
   - Contributing: "contributing.md"
-  - Changelog: "changelog.md"
+  # - Changelog: "changelog.md"
+  
