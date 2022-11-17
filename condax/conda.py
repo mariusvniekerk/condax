@@ -141,9 +141,9 @@ def detemine_executables_from_env(
                     or (
                         is_windows()
                         and (
-                            fn.lower().startswith("scripts\\")
-                            or fn.lower().startswith("library\\mingw-w64\\bin\\")
-                            or re.match(r"library\\.*\\bin\\", fn.lower())
+                            fn.lower().startswith("scripts/")
+                            or fn.lower().startswith("library/mingw-w64/bin/")
+                            or re.match(r"library/.*/bin/", fn.lower())
                         )
                     )
                 )
