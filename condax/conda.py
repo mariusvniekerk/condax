@@ -120,7 +120,7 @@ def package_name(package_spec: str):
     return m.group(0)
 
 
-def detemine_executables_from_env(
+def determine_executables_from_env(
     package: str, env_prefix: Optional[Path] = None
 ) -> Set[Path]:
     if env_prefix is None:
