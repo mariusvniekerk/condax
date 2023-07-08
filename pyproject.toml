@@ -21,7 +21,8 @@ dependencies = [
 	"PyYAML",
 	"ensureconda",
 	"typer",
-	"pydantic",
+	"pydantic >=2",
+	"pydantic-settings",
 	'importlib_metadata; python_version < "3.8.0"',
 ]
 dynamic = ["version"]
