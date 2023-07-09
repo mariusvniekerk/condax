@@ -2,10 +2,10 @@ import os
 import platform
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Generator, Optional
+from typing import TYPE_CHECKING, Generator, List, Optional
 
 import yaml
-from pydantic import BaseSettings, Field
+from pydantic import ConfigDict, Field
 
 with warnings.catch_warnings():
     # requests which is a transitive dependency has some chatty warnings during import
@@ -13,6 +13,7 @@ with warnings.catch_warnings():
     import requests  # noqa: F401
 
 from ensureconda.api import ensureconda
+from pydantic_settings import BaseSettings
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
@@ -25,15 +26,13 @@ def is_windows() -> bool:
 class Config(BaseSettings):
     prefix_path: Path = Path("~").expanduser() / ".condax"
     link_destination: Path = Path("~").expanduser() / ".local" / "bin"
-    channels = ["conda-forge", "defaults"]
+    channels: List[str] = ["conda-forge", "defaults"]
     conda_executable: Optional[Path] = Field(
         default=ensureconda(
             mamba=True, micromamba=True, conda=True, conda_exe=True, no_install=True
         )
     )
-
-    class Config:
-        env_prefix = "CONDAX_"
+    model_config = ConfigDict(env_prefix="CONDAX_")
 
     def ensure_conda_executable(self, require_mamba: bool = True):
         def candidates() -> "Generator[Optional[StrPath], None, None]":
