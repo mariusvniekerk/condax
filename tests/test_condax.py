@@ -43,7 +43,7 @@ def test_pipx_install_roundtrip(conf):
     assert post_install.startswith(conf["link"])
 
     # ensure that the executable installed is on PATH
-    subprocess.check_call(["jq", "--help"])
+    subprocess.check_call(["jq", "--help"], shell=True)
 
     # remove the env
     remove_package("jq")

@@ -178,7 +178,7 @@ def install_package(
     if channels is None:
         channels = CONFIG.channels
     conda.create_conda_environment(package, channels=channels)
-    executables_to_link = conda.detemine_executables_from_env(package)
+    executables_to_link = conda.determine_executables_from_env(package)
     CONFIG.link_destination.mkdir(parents=True, exist_ok=True)
     create_links(
         executables_to_link,
@@ -204,7 +204,7 @@ def inject_packages(
     conda.install_conda_packages(extra_packages, channels=channels, prefix=prefix)
     if include_apps:
         for extra_package in extra_packages:
-            executables_to_link = conda.detemine_executables_from_env(
+            executables_to_link = conda.determine_executables_from_env(
                 extra_package, env_prefix=prefix
             )
             CONFIG.link_destination.mkdir(parents=True, exist_ok=True)
@@ -236,7 +236,7 @@ def exit_if_not_installed(package: str):
 
 def remove_package(package) -> None:
     exit_if_not_installed(package)
-    executables_to_unlink = conda.detemine_executables_from_env(package)
+    executables_to_unlink = conda.determine_executables_from_env(package)
     prefix = conda.conda_env_prefix(package)
     remove_links(executables_to_unlink, env_prefix=prefix)
     with prefix_metadata(prefix) as metadata:
@@ -268,16 +268,16 @@ def update_package(package: str, link_conflict_action=LinkConflictAction.ERROR) 
         injected = metadata.injected_packages
         injected_with_apps = metadata.injected_packages_with_apps
     try:
-        executables_already_linked |= set(conda.detemine_executables_from_env(package))
+        executables_already_linked |= set(conda.determine_executables_from_env(package))
 
         conda.update_conda_env(package)
         env_prefix = conda.conda_env_prefix(package)
         executables_linked_in_updated = set(
-            conda.detemine_executables_from_env(package)
+            conda.determine_executables_from_env(package)
         )
         for p in injected_with_apps:
             executables_linked_in_updated |= set(
-                conda.detemine_executables_from_env(p, env_prefix=env_prefix)
+                conda.determine_executables_from_env(p, env_prefix=env_prefix)
             )
 
         to_create = executables_linked_in_updated - executables_already_linked

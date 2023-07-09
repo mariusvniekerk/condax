@@ -120,7 +120,7 @@ def package_name(package_spec: str):
     return m.group(0)
 
 
-def detemine_executables_from_env(
+def determine_executables_from_env(
     package: str, env_prefix: Optional[Path] = None
 ) -> Set[Path]:
     if env_prefix is None:
@@ -131,24 +131,19 @@ def detemine_executables_from_env(
         package_info = json.loads(path.read_text())
         if package_info["name"] == name:
             logging.debug("Candidate files: %s", package_info["files"])
-            potential_executables: List[str] = [
-                fn
-                for fn in package_info["files"]
-                if (
-                    fn.startswith("bin/")
-                    or fn.startswith("sbin/")
-                    # They are Windows style path
-                    or (
-                        is_windows()
-                        and (
-                            fn.lower().startswith("scripts\\")
-                            or fn.lower().startswith("library\\mingw-w64\\bin\\")
-                            or re.match(r"library\\.*\\bin\\", fn.lower())
-                        )
-                    )
-                )
-            ]
-            # TODO: Handle windows style paths
+            potential_executables: List[str] = []
+            for fn in package_info["files"]:
+                if is_windows():
+                    processed_fn = fn.lower().replace("\\", "/")
+                    if (
+                        processed_fn.startswith("scripts/")
+                        or processed_fn.startswith("library/mingw-w64/bin/")
+                        or re.match(r"library/.*/bin/", processed_fn)
+                    ):
+                        potential_executables.append(fn)
+                else:
+                    if fn.startswith("bin/") or fn.startswith("sbin/"):
+                        potential_executables.append(fn)
             break
     else:
         raise ValueError("Could not determine package files")
