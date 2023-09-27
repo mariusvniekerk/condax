@@ -141,6 +141,7 @@ def remove(
     This can update shell configuration files like `~/.bashrc`."""
 )
 def ensure_path() -> None:
+    config.CONFIG.link_destination.mkdir(parents=True, exist_ok=True)
     paths.add_path_to_environment(config.CONFIG.link_destination)
 
 
