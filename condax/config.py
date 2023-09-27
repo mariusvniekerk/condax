@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Generator, List, Optional
 
 import yaml
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, field_validator
 
 with warnings.catch_warnings():
     # requests which is a transitive dependency has some chatty warnings during import
@@ -33,6 +33,14 @@ class Config(BaseSettings):
         )
     )
     model_config = ConfigDict(env_prefix="CONDAX_")
+
+    @field_validator("prefix_path", "link_destination", mode="before")
+    def ensure_prefix_path(self, v: Path) -> Path:
+        v = v.expanduser()
+        if not v.exists():
+            v.mkdir(parents=True, exist_ok=True)
+        v = v.resolve()
+        return v
 
     def ensure_conda_executable(self, require_mamba: bool = True):
         def candidates() -> "Generator[Optional[StrPath], None, None]":
