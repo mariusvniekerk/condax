@@ -35,7 +35,8 @@ class Config(BaseSettings):
     model_config = ConfigDict(env_prefix="CONDAX_")
 
     @field_validator("prefix_path", "link_destination", mode="before")
-    def ensure_prefix_path(self, v: Path) -> Path:
+    @classmethod
+    def ensure_prefix_path(cls, v: Path) -> Path:
         v = v.expanduser()
         if not v.exists():
             v.mkdir(parents=True, exist_ok=True)
