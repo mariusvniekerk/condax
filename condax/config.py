@@ -36,8 +36,8 @@ class Config(BaseSettings):
 
     @field_validator("prefix_path", "link_destination", mode="before")
     @classmethod
-    def ensure_prefix_path(cls, v: Path) -> Path:
-        v = v.expanduser()
+    def ensure_prefix_path(cls, v: os.PathLike) -> Path:
+        v = Path(v).expanduser()
         if not v.exists():
             v.mkdir(parents=True, exist_ok=True)
         v = v.resolve()
