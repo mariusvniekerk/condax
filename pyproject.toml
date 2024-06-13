@@ -6,7 +6,7 @@ authors = [
 	{ name = 'Marius van Niekerk', email = 'marius.v.niekerk@gmail.com' }
 ]
 license = 'MIT'
-requires-python = '>=3.7'
+requires-python = '>=3.8'
 classifiers = [
 	'Development Status :: 4 - Beta',
 	'Intended Audience :: Developers',
@@ -23,7 +23,6 @@ dependencies = [
 	"typer",
 	"pydantic >=2",
 	"pydantic-settings",
-	'importlib_metadata; python_version < "3.8.0"',
 ]
 dynamic = ["version"]
 
