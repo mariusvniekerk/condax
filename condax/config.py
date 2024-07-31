@@ -99,6 +99,10 @@ if "XDG_CONFIG_HOME" in os.environ:
         ),
     ]
 _condaxrc_path_list += [
+    os.path.join("~", ".condax", "condaxrc"),
+    os.path.join("~", ".condax", ".condaxrc"),
+    os.path.join("~", ".config", "condax", "condaxrc"),
+    os.path.join("~", ".config", "condax", ".condaxrc"),
     "/etc/condax/condaxrc",
     "/etc/condax/.condaxrc",
     "/var/lib/condax/condaxrc",
