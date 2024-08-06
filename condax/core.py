@@ -147,7 +147,7 @@ def remove_links(executables_to_unlink: Collection[Path], env_prefix: Path) -> N
             os.unlink(link)
             removed_links[exe] = link
         else:
-            if os.path.islink(link) and (os.readlink(link) == exe):
+            if os.path.islink(link) and (os.readlink(link) == str(exe)):
                 os.unlink(link)
                 removed_links[exe] = link
 
