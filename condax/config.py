@@ -84,8 +84,31 @@ class Config(BaseSettings):
             raise RuntimeError("Could not find conda executable")
 
 
-_condaxrc_path = os.path.expanduser(os.path.join("~", ".condaxrc"))
-if os.path.exists(_condaxrc_path):
+_condaxrc_path_list = [os.path.expanduser(os.path.join("~", ".condaxrc"))]
+if "CONDAXRC" in os.environ:
+    _condaxrc_path_list = [os.environ["CONDAXRC"]] + _condaxrc_path_list
+if "XDG_CONFIG_HOME" in os.environ:
+    _condaxrc_path_list += [
+        os.path.expanduser(
+            os.path.join(os.environ["XDG_CONFIG_HOME"], "condax", "condaxrc")
+        ),
+        os.path.expanduser(
+            os.path.join(os.environ["XDG_CONFIG_HOME"], "condax", ".condaxrc")
+        ),
+    ]
+_condaxrc_path_list += [
+    os.path.join("~", ".condax", "condaxrc"),
+    os.path.join("~", ".condax", ".condaxrc"),
+    os.path.join("~", ".config", "condax", "condaxrc"),
+    os.path.join("~", ".config", "condax", ".condaxrc"),
+    "/etc/condax/condaxrc",
+    "/etc/condax/.condaxrc",
+    "/var/lib/condax/condaxrc",
+    "/var/lib/condax/.condaxrc",
+]
+_condaxrc_path_list = [x for x in _condaxrc_path_list if os.path.exists(x)]
+if any(_condaxrc_path_list):
+    _condaxrc_path = _condaxrc_path_list[0]
     with open(_condaxrc_path) as fo:
         CONFIG = Config(**yaml.safe_load(fo))
 else:
