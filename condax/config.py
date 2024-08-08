@@ -84,9 +84,7 @@ class Config(BaseSettings):
             raise RuntimeError("Could not find conda executable")
 
 
-_condaxrc_path_list = [
-    os.path.expanduser(os.path.join("~", ".condaxrc"))
-]
+_condaxrc_path_list = [os.path.expanduser(os.path.join("~", ".condaxrc"))]
 if "CONDAXRC" in os.environ:
     _condaxrc_path_list = [os.environ["CONDAXRC"]] + _condaxrc_path_list
 if "XDG_CONFIG_HOME" in os.environ:
@@ -106,7 +104,7 @@ _condaxrc_path_list += [
     "/etc/condax/condaxrc",
     "/etc/condax/.condaxrc",
     "/var/lib/condax/condaxrc",
-    "/var/lib/condax/.condaxrc"
+    "/var/lib/condax/.condaxrc",
 ]
 _condaxrc_path_list = [x for x in _condaxrc_path_list if os.path.exists(x)]
 if any(_condaxrc_path_list):
