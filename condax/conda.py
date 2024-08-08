@@ -1,3 +1,4 @@
+import enum
 import json
 import logging
 import os
@@ -28,9 +29,17 @@ def write_condarc_to_prefix(
         fo.write("\n")
 
 
+class CreateResult(enum.Enum):
+    CREATED = enum.auto()
+    ALREADY_EXISTS = enum.auto()
+
+
 def create_conda_environment(
     package: str, channels: Optional[List[str]] = None
-) -> None:
+) -> CreateResult:
+    if conda_environment_exists(package):
+        return CreateResult.ALREADY_EXISTS
+
     conda_exe = CONFIG.conda_executable
     assert conda_exe is not None
     prefix = conda_env_prefix(package)
@@ -56,6 +65,12 @@ def create_conda_environment(
     )
 
     write_condarc_to_prefix(prefix, channels)
+    return CreateResult.CREATED
+
+
+def conda_environment_exists(package: str):
+    prefix = conda_env_prefix(package)
+    return prefix.exists()
 
 
 def install_conda_packages(

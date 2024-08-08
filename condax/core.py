@@ -172,7 +172,14 @@ def install_package(
 ) -> None:
     if channels is None:
         channels = CONFIG.channels
-    conda.create_conda_environment(package, channels=channels)
+    res = conda.create_conda_environment(package, channels=channels)
+    if res == conda.CreateResult.ALREADY_EXISTS:
+        typer.secho(
+            f"`{package}` already installed, skipping installation",
+            err=True,
+            fg=typer.colors.YELLOW,
+        )
+        return
     executables_to_link = conda.determine_executables_from_env(package)
     CONFIG.link_destination.mkdir(parents=True, exist_ok=True)
     create_links(
@@ -205,12 +212,12 @@ def inject_packages(
             CONFIG.link_destination.mkdir(parents=True, exist_ok=True)
             create_links(executables_to_link, link_conflict_action, env_prefix=prefix)
     with prefix_metadata(prefix) as metadata:
-        metadata.injected_packages = list(
-            sorted(set(metadata.injected_packages) | set(extra_packages))
+        metadata.injected_packages = sorted(
+            set(metadata.injected_packages) | set(extra_packages)
         )
         if include_apps:
-            metadata.injected_packages_with_apps = list(
-                sorted(set(metadata.injected_packages_with_apps) | set(extra_packages))
+            metadata.injected_packages_with_apps = sorted(
+                set(metadata.injected_packages_with_apps) | set(extra_packages)
             )
 
     typer.secho(

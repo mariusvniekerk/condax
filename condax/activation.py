@@ -2,7 +2,7 @@ from textwrap import dedent
 
 
 def write_activating_entrypoint_unix(executable, prefix):
-    template = dedent(
+    dedent(
         f"""
         #!/bin/sh
         export PATH="$PATH:{prefix}/bin"
@@ -14,7 +14,7 @@ def write_activating_entrypoint_unix(executable, prefix):
 
 def write_activating_entrypoint_windows(executable, prefix):
     # TODO: Verify if this is right?
-    template = dedent(
+    dedent(
         f"""
         SET PATH="%PATH%;{prefix}\\Library\\bin;{prefix}\\Scripts"
 
