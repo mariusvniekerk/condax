@@ -16,7 +16,7 @@ wheel and is available on Linux and macOS and supports
 Python 3.5+ and PyPy.
 
 ```bash
-$ pip install condax
+pip install condax
 ```
 
 ## License
